@@ -2,11 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 
 public class MinHashTable {
     private final char FIRST_CHAR;
@@ -14,14 +10,25 @@ public class MinHashTable {
     private int SHINGLE_SIZE;
     private int PERMUTATIONS;
 
-    private ArrayList<HashFunction> hashFunctions = new ArrayList<>();
-    private ArrayList<ArrayList<Integer>> minhashTable = new ArrayList<>();
+    private List<HashFunction> hashFunctions = new ArrayList<>();
+    private List<List<Integer>> minhashTable = new ArrayList<>();
 
-    MinHashTable(String filename, char firstChar, int charCount, int shingleSize, int hashFunctionCount) throws IOException {
+    private boolean COMPUTE_JACCARD;
+    private List<Boolean[]> sparseSets;
+    private List<List<Double>> jaccardCoefficients;
+
+
+    MinHashTable(String filename, char firstChar, int charCount, int shingleSize, int hashFunctionCount, boolean computeJaccard) throws IOException {
         FIRST_CHAR = firstChar;
         CHAR_COUNT = charCount;
         SHINGLE_SIZE = shingleSize;
         PERMUTATIONS = (int)Math.pow(CHAR_COUNT, SHINGLE_SIZE);
+        COMPUTE_JACCARD = computeJaccard;
+
+        if (COMPUTE_JACCARD) {
+            sparseSets = new ArrayList<>();
+            jaccardCoefficients = new ArrayList<>();
+        }
 
         generateHashFunctions(hashFunctions, hashFunctionCount);
 
@@ -30,24 +37,25 @@ public class MinHashTable {
         String line;
 
         while ((line = br.readLine()) != null) {
-            boolean[] sparseSet = createSparseSet(line);
-            ArrayList<Integer> minHashes = new ArrayList<>(Collections.nCopies(hashFunctions.size(), Integer.MAX_VALUE));
 
-            for (int i = 0; i < sparseSet.length; ++i) { //permutation indices
-                if (sparseSet[i]) { //Update minhashes
-                    for (int j = 0; j < hashFunctions.size(); ++j) {
-                        int nextHash = hashFunctions.get(j).hash(i);
-                        if (nextHash < minHashes.get(j)) {
-                            minHashes.set(j, nextHash);
-                        }
-                    }
-                }
+            Boolean[] sparseSet = createSparseSet(line);
+            if (COMPUTE_JACCARD) {
+                sparseSets.add(sparseSet);
+                List<Double> NewJaccardCoefficients = computeJaccardCoefficientForSet(sparseSet);
+                jaccardCoefficients.add(NewJaccardCoefficients);
             }
+
+            ArrayList<Integer> minHashes = new ArrayList<>(Collections.nCopies(hashFunctions.size(), Integer.MAX_VALUE));
+            getMinHashForLine(sparseSet, minHashes);
             minhashTable.add(minHashes);
         }
     }
 
-    private void generateHashFunctions(ArrayList<HashFunction> list, int count) {
+    MinHashTable(String filename, char firstChar, int charCount, int shingleSize, int hashFunctionCount) throws IOException {
+            this(filename, firstChar, charCount, shingleSize, hashFunctionCount, false);
+    }
+
+    private void generateHashFunctions(List<HashFunction> list, int count) {
         int j = 1;
         Random rand = new Random();
 
@@ -67,8 +75,8 @@ public class MinHashTable {
         return gcd(b, a % b);
     }
 
-    private boolean[] createSparseSet(String line) {
-        boolean[] sparseVector = new boolean[PERMUTATIONS];
+    private Boolean[] createSparseSet(String line) {
+        Boolean[] sparseVector = new Boolean[PERMUTATIONS];
         Arrays.fill(sparseVector, false);
 
         for (int i = 0; i < line.length() - SHINGLE_SIZE + 1; ++i) {
@@ -80,6 +88,39 @@ public class MinHashTable {
             sparseVector[encodedShingle] = true;
         }
         return sparseVector;
+    }
+
+    private void getMinHashForLine(Boolean[] sparseSet, ArrayList<Integer> minHashes) {
+        for (int i = 0; i < sparseSet.length; ++i) { //permutation indices
+            if (sparseSet[i]) { //Update minhashes
+                for (int j = 0; j < hashFunctions.size(); ++j) {
+                    int nextHash = hashFunctions.get(j).hash(i);
+                    if (nextHash < minHashes.get(j)) {
+                        minHashes.set(j, nextHash);
+                    }
+                }
+            }
+        }
+    }
+
+    private List<Double> computeJaccardCoefficientForSet(Boolean[] newSet) {
+        List<Double> jaccardCoefficients = new ArrayList<>();
+        for (Boolean[] set : sparseSets) {
+            assert(set.length == newSet.length);
+
+            int total = 0;
+            int common = 0;
+            for (int i = 0; i < set.length; ++i) {
+                if (set[i] || newSet[i]) {
+                    ++total;
+                    if (set[i] && newSet[i]) {
+                        ++common;
+                    }
+                }
+            }
+            jaccardCoefficients.add(((double) common) / total);
+        }
+        return jaccardCoefficients;
     }
 
     /**
@@ -96,5 +137,10 @@ public class MinHashTable {
             }
         }
         return matchingHashes/hashFunctions.size();
+    }
+
+    double getJaccardCoefficient(int col1, int col2) {
+        if (col1 > col2) return jaccardCoefficients.get(col1).get(col2);
+        else return jaccardCoefficients.get(col2).get(col1);
     }
 }

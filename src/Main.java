@@ -66,12 +66,21 @@ public class Main {
         System.out.println(minhashTable.toString());
     }*/
     public static void main(String[] args) throws IOException {
-        MinHashTable mht = new MinHashTable("TestFiles/testfile.txt", 'A', 5, 3, 100);
-        System.out.println(mht.getMinHashSimilarity(0, 0) * 100 + "%");
-        System.out.println(mht.getMinHashSimilarity(0, 1) * 100 + "%");
-        System.out.println(mht.getMinHashSimilarity(0, 2) * 100 + "%");
-        System.out.println(mht.getMinHashSimilarity(0, 3) * 100 + "%");
-        System.out.println(mht.getMinHashSimilarity(0, 4) * 100 + "%");
+        MinHashTable mht = new MinHashTable("TestFiles/testfile.txt", 'A', 5, 3, 100, true);
+        System.out.print(mht.getMinHashSimilarity(0, 0) * 100 + "%     ");
+        System.out.println(mht.getJaccardCoefficient(0, 0) * 100 + "%");
+
+        System.out.print(mht.getMinHashSimilarity(0, 1) * 100 + "%     ");
+        System.out.println(mht.getJaccardCoefficient(0, 1) * 100 + "%");
+
+        System.out.print(mht.getMinHashSimilarity(0, 2) * 100 + "%     ");
+        System.out.println(mht.getJaccardCoefficient(0, 2) * 100 + "%");
+
+        System.out.print(mht.getMinHashSimilarity(0, 3) * 100 + "%     ");
+        System.out.println(mht.getJaccardCoefficient(0, 3) * 100 + "%");
+
+        System.out.print(mht.getMinHashSimilarity(0, 4) * 100 + "%     ");
+        System.out.println(mht.getJaccardCoefficient(0, 4) * 100 + "%");
     }
 }
 
