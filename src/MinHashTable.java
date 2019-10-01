@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class MinHashTable {
@@ -11,48 +8,90 @@ public class MinHashTable {
     private int PERMUTATIONS;
 
     private List<HashFunction> hashFunctions = new ArrayList<>();
-    private List<List<Integer>> minhashTable = new ArrayList<>();
+    //private List<List<Integer>> minhashTable = new ArrayList<>();
+    private Map<String, List<Integer>> minhashTable = new HashMap<>();
 
     private boolean COMPUTE_JACCARD;
-    private List<Boolean[]> sparseSets;
-    private List<List<Double>> jaccardCoefficients;
+    private Map<String, boolean[]> sparseSets;
+    /*private List<boolean[]> sparseSets;
+    private List<List<Double>> jaccardCoefficients;*/
 
 
-    MinHashTable(String filename, char firstChar, int charCount, int shingleSize, int hashFunctionCount, boolean computeJaccard) throws IOException {
-        FIRST_CHAR = firstChar;
-        CHAR_COUNT = charCount;
+    MinHashTable(String folderName, AsciiCharactersLimitation limitation, int shingleSize, int hashFunctionCount, boolean computeJaccard) throws IOException {
+        switch (limitation) {
+            case ALL_CHARACTERS:
+                FIRST_CHAR = ' ';
+                CHAR_COUNT = '}' - FIRST_CHAR + 1;
+                break;
+
+            case NUMBERS_AND_LETTERS:
+                FIRST_CHAR = '0';
+                CHAR_COUNT = 'z' - FIRST_CHAR + 1;
+                break;
+
+            case LETTERS_LOWERCASE:
+                FIRST_CHAR = 'a';
+                CHAR_COUNT = 'z' - FIRST_CHAR + 1;
+                break;
+
+            default:
+                throw new IllegalArgumentException("This should not have happened. The AsciiCharactersLimitation must have been changed.");
+        }
+
         SHINGLE_SIZE = shingleSize;
         PERMUTATIONS = (int)Math.pow(CHAR_COUNT, SHINGLE_SIZE);
         COMPUTE_JACCARD = computeJaccard;
 
         if (COMPUTE_JACCARD) {
-            sparseSets = new ArrayList<>();
-            jaccardCoefficients = new ArrayList<>();
+            sparseSets = new HashMap<>();
         }
 
         generateHashFunctions(hashFunctions, hashFunctionCount);
 
-        File inputFile = new File(filename);
-        BufferedReader br = new BufferedReader(new FileReader(inputFile));
-        String line;
+        processFilesInFolder(folderName, limitation);
+    }
 
-        while ((line = br.readLine()) != null) {
+    MinHashTable(String folderName, AsciiCharactersLimitation limitation, int shingleSize, int hashFunctionCount) throws IOException {
+            this(folderName, limitation, shingleSize, hashFunctionCount, false);
+    }
 
-            Boolean[] sparseSet = createSparseSet(line);
+    private void processFilesInFolder(String folderName, AsciiCharactersLimitation limitation) throws IOException {
+        File folder = new File(folderName);
+
+        for (File file : folder.listFiles()) {
+            boolean[] sparseSet = new boolean[PERMUTATIONS]; //is filled with false by default
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                line = modifyLine(line, limitation);
+                fillSparseSet(sparseSet, line);
+            }
+
             if (COMPUTE_JACCARD) {
-                sparseSets.add(sparseSet);
-                List<Double> NewJaccardCoefficients = computeJaccardCoefficientForSet(sparseSet);
-                jaccardCoefficients.add(NewJaccardCoefficients);
+                sparseSets.put(file.getName(), sparseSet);
             }
 
             ArrayList<Integer> minHashes = new ArrayList<>(Collections.nCopies(hashFunctions.size(), Integer.MAX_VALUE));
             getMinHashForLine(sparseSet, minHashes);
-            minhashTable.add(minHashes);
+            minhashTable.put(file.getName(), minHashes);
         }
     }
 
-    MinHashTable(String filename, char firstChar, int charCount, int shingleSize, int hashFunctionCount) throws IOException {
-            this(filename, firstChar, charCount, shingleSize, hashFunctionCount, false);
+    private String modifyLine(String line, AsciiCharactersLimitation limitation) {
+        switch (limitation) {
+            case ALL_CHARACTERS:
+                return line;
+
+            case NUMBERS_AND_LETTERS:
+                return line.replaceAll("[^\\w]", "");
+
+            case LETTERS_LOWERCASE:
+                return line.replaceAll("[^a-zA-Z]", "").toLowerCase();
+
+            default:
+                throw new IllegalArgumentException("This should not have happened. The AsciiCharactersLimitation must have been changed.");
+        }
     }
 
     private void generateHashFunctions(List<HashFunction> list, int count) {
@@ -75,22 +114,18 @@ public class MinHashTable {
         return gcd(b, a % b);
     }
 
-    private Boolean[] createSparseSet(String line) {
-        Boolean[] sparseVector = new Boolean[PERMUTATIONS];
-        Arrays.fill(sparseVector, false);
-
+    private void fillSparseSet(boolean[] sparseSet, String line) {
         for (int i = 0; i < line.length() - SHINGLE_SIZE + 1; ++i) {
             int encodedShingle = 0;
             for (int j = 0; j < SHINGLE_SIZE; ++j) {
                 int base = (int)Math.pow(CHAR_COUNT, (SHINGLE_SIZE - 1 - j));
                 encodedShingle += (line.charAt(j+i) - FIRST_CHAR) * base;
             }
-            sparseVector[encodedShingle] = true;
+            sparseSet[encodedShingle] = true;
         }
-        return sparseVector;
     }
 
-    private void getMinHashForLine(Boolean[] sparseSet, ArrayList<Integer> minHashes) {
+    private void getMinHashForLine(boolean[] sparseSet, ArrayList<Integer> minHashes) {
         for (int i = 0; i < sparseSet.length; ++i) { //permutation indices
             if (sparseSet[i]) { //Update minhashes
                 for (int j = 0; j < hashFunctions.size(); ++j) {
@@ -103,44 +138,36 @@ public class MinHashTable {
         }
     }
 
-    private List<Double> computeJaccardCoefficientForSet(Boolean[] newSet) {
-        List<Double> jaccardCoefficients = new ArrayList<>();
-        for (Boolean[] set : sparseSets) {
-            assert(set.length == newSet.length);
-
-            int total = 0;
-            int common = 0;
-            for (int i = 0; i < set.length; ++i) {
-                if (set[i] || newSet[i]) {
-                    ++total;
-                    if (set[i] && newSet[i]) {
-                        ++common;
-                    }
-                }
-            }
-            jaccardCoefficients.add(((double) common) / total);
-        }
-        return jaccardCoefficients;
-    }
-
     /**
      * Computes similarity from minhashes.
-     * @param col1 - index of the first item to be compared
-     * @param col2 - index of the second item to be compared
+     * @param file1 - name of the first file to be compared
+     * @param file2 - name of the second file to be compared
      * @return approximation of Jaccard similarity based on the similarity of minhashes
      */
-    double getMinHashSimilarity(int col1, int col2) {
+    double getMinHashSimilarity(String file1, String file2) {
         double matchingHashes = 0;
         for (int i = 0; i < hashFunctions.size(); ++i) {
-            if (minhashTable.get(col1).get(i) == minhashTable.get(col2).get(i)) {
+            if (minhashTable.get(file1).get(i).equals(minhashTable.get(file2).get(i))) {
                 matchingHashes += 1.0;
             }
         }
         return matchingHashes/hashFunctions.size();
     }
 
-    double getJaccardCoefficient(int col1, int col2) {
-        if (col1 > col2) return jaccardCoefficients.get(col1).get(col2);
-        else return jaccardCoefficients.get(col2).get(col1);
+    double getJaccardCoefficient(String file1, String file2) {
+        boolean[] set1 = sparseSets.get(file1);
+        boolean[] set2 = sparseSets.get(file2);
+
+        int total = 0;
+        int common = 0;
+        for (int i = 0; i < set1.length; ++i) {
+            if (set1[i] || set2[i]) {
+                ++total;
+                if (set1[i] && set2[i]) {
+                    ++common;
+                }
+            }
+        }
+        return ((double) common)/total;
     }
 }

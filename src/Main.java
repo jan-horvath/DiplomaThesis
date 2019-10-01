@@ -1,7 +1,11 @@
 import java.io.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class Main {
     /*static final char START = 'A';
@@ -66,11 +70,16 @@ public class Main {
         System.out.println(minhashTable.toString());
     }*/
     public static void main(String[] args) throws IOException {
-        MinHashTable mht = new MinHashTable("TestFiles/testfile.txt", 'A', 5, 3, 100, true);
-        System.out.print(mht.getMinHashSimilarity(0, 0) * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient(0, 0) * 100 + "%");
 
-        System.out.print(mht.getMinHashSimilarity(0, 1) * 100 + "%     ");
+        String directoryName = System.getProperty("user.dir") + "\\TestFiles";
+
+        long start = System.currentTimeMillis();
+
+        MinHashTable mht = new MinHashTable(directoryName, AsciiCharactersLimitation.LETTERS_LOWERCASE, 3, 10000, true);
+        System.out.print(mht.getMinHashSimilarity("Car1.txt", "Car2.txt") * 100 + "%     ");
+        System.out.println(mht.getJaccardCoefficient("Car1.txt", "Car2.txt") * 100 + "%");
+
+        /*System.out.print(mht.getMinHashSimilarity(0, 1) * 100 + "%     ");
         System.out.println(mht.getJaccardCoefficient(0, 1) * 100 + "%");
 
         System.out.print(mht.getMinHashSimilarity(0, 2) * 100 + "%     ");
@@ -80,7 +89,12 @@ public class Main {
         System.out.println(mht.getJaccardCoefficient(0, 3) * 100 + "%");
 
         System.out.print(mht.getMinHashSimilarity(0, 4) * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient(0, 4) * 100 + "%");
+        System.out.println(mht.getJaccardCoefficient(0, 4) * 100 + "%");*/
+
+        long finish = System.currentTimeMillis();
+
+        System.out.println();
+        System.out.println(finish - start);
     }
 }
 
