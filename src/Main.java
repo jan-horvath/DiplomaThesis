@@ -1,102 +1,76 @@
 import java.io.*;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class Main {
-    /*static final char START = 'A';
-    static final int CHARACTERS = 4;
-    static final int SHINGLE_SIZE = 2;
-    static final int PERMUTATIONS = (int)Math.pow(CHARACTERS, SHINGLE_SIZE);
+    static private File groundTruthFile = new File(System.getProperty("user.dir") + "\\MW_database\\ground_truth_test.txt");
+    //static private File groundTruthFile = new File(System.getProperty("user.dir") + "\\MW_database\\ground_truth-sequence_actions.txt");
+    static private File dataFile = new File(System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-kmedoids350.data");
+    static public final int MIN_CLASS = 22;
+    static public final int MAX_CLASS = 152;
 
-    public static boolean[] createSparseSet(String line) {
-        boolean[] sparseVector = new boolean[PERMUTATIONS];
-        Arrays.fill(sparseVector, false);
+    static private Map<Integer, int[]> parseGroundTruthFile() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(groundTruthFile));
+        Map<Integer, int[]> groundTruth = new HashMap<>();
 
-        for (int i = 0; i < line.length() - SHINGLE_SIZE + 1; ++i) {
-            System.out.println(line.substring(i, i + SHINGLE_SIZE));
-            int encodedShingle = 0;
-            for (int j = 0; j < SHINGLE_SIZE; ++j) {
-                int base = (int)Math.pow(CHARACTERS, (SHINGLE_SIZE - 1 - j));
-                encodedShingle += (line.charAt(j+i) - START) * base;
+        String line;
+        Pattern sequenceIdPattern = Pattern.compile("^(\\d+?)_");
+        Pattern classIdPattern = Pattern.compile("_(\\d+?)_");
+        Matcher sequenceIdMatcher, classIdMatcher;
+        while ((line = br.readLine()) != null) { //TODO refactor parsing
+            sequenceIdMatcher = sequenceIdPattern.matcher(line);
+            classIdMatcher = classIdPattern.matcher(line);
+            if (!sequenceIdMatcher.find() || !classIdMatcher.find()) {
+                throw new InputMismatchException("Incorrect input format. Expected: <sequenceId>_<classId>_<offset>_<length>");
             }
-            sparseVector[encodedShingle] = true;
+
+            Integer sequenceId = Integer.parseInt(sequenceIdMatcher.group(1));
+            int classId = Integer.parseInt(classIdMatcher.group(1)) - MIN_CLASS;
+            if (!groundTruth.containsKey(sequenceId)) {
+                groundTruth.put(sequenceId, new int[MAX_CLASS - MIN_CLASS + 1]);
+                ++groundTruth.get(sequenceId)[classId];
+            } else {
+                ++groundTruth.get(sequenceId)[classId];
+            }
         }
-        return sparseVector;
+        return groundTruth;
     }
 
+    /*static private Map<Integer, int[]> parseDataFile() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(dataFile));
+        Map<Integer, int[]> groundTruth = new HashMap<>();
 
-
-    public static void main(String[] args) throws IOException {
-        File inputFile = new File("testfile.txt");
-        BufferedReader br = new BufferedReader(new FileReader(inputFile));
         String line;
-
-        ArrayList<HashFunction> hashFunctions = new ArrayList<>();
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 1, 9));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 3, 8));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 5, 7));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 7, 6));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 9, 4));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 11, 2));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 13, 9));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 17, 18));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 19, 17));
-        hashFunctions.add(new HashFunction(PERMUTATIONS, 21, 0));
-
-        ArrayList<ArrayList<Integer>> minhashTable = new ArrayList<>();
-
+        Pattern sequenceIdPattern = Pattern.compile("ObjectKey (\\d+?)_");
+        Pattern motionWordsCountPattern = Pattern.compile("^(\\d+?);");
+        Matcher sequenceIdMatcher, motionWordsCountMatcher;
         while ((line = br.readLine()) != null) {
-            System.out.println(line);
-            boolean[] sparseSet = createSparseSet(line);
-            ArrayList<Integer> minHashes = new ArrayList<>(Collections.nCopies(hashFunctions.size(), Integer.MAX_VALUE));
+            if (line.contains("#objectKey")) {//TODO refactor parsing
 
-            for (int i = 0; i < sparseSet.length; ++i) { //permutation indices
-                if (sparseSet[i]) { //Update minhashes
-                    for (int j = 0; j < hashFunctions.size(); ++j) {
-                        int nextHash = hashFunctions.get(j).hash(i);
-                        if (nextHash < minHashes.get(j)) {
-                            minHashes.set(j, nextHash);
-                        }
-                    }
+                sequenceIdMatcher = sequenceIdPattern.matcher(line);
+                if (!sequenceIdMatcher.find()) {
+                    throw new InputMismatchException("Incorrect input format. Expected: #objectKey messif.objects.keys.AbstractObjectKey <sequenceId>_0_0_0");
+                }
+                Integer sequenceId = Integer.parseInt(sequenceIdMatcher.group(1));
+
+                line = br.readLine();
+                motionWordsCountMatcher = motionWordsCountPattern.matcher(line);
+                if (!motionWordsCountMatcher.find()) {
+                    throw new InputMismatchException("Incorrect input format. Expected: <motionWordsCount>;mcdr.objects.impl.ObjectMotionWord");
+                }
+                int motionWordsCount = Integer.parseInt(motionWordsCountMatcher.group(1));
+
+                for (int i = 0; i < motionWordsCount; ++i) {
+
                 }
             }
-            minhashTable.add(minHashes);
         }
-        System.out.println(minhashTable.toString());
     }*/
+
     public static void main(String[] args) throws IOException {
-
-        String directoryName = System.getProperty("user.dir") + "\\TestFiles";
-
-        long start = System.currentTimeMillis();
-
-        MinHashTable mht = new MinHashTable(directoryName, AsciiCharactersLimitation.LETTERS_LOWERCASE, 3, 10000, true);
-        System.out.print(mht.getMinHashSimilarity("Car1.txt", "Car2.txt") * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient("Car1.txt", "Car2.txt") * 100 + "%");
-
-        /*System.out.print(mht.getMinHashSimilarity(0, 1) * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient(0, 1) * 100 + "%");
-
-        System.out.print(mht.getMinHashSimilarity(0, 2) * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient(0, 2) * 100 + "%");
-
-        System.out.print(mht.getMinHashSimilarity(0, 3) * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient(0, 3) * 100 + "%");
-
-        System.out.print(mht.getMinHashSimilarity(0, 4) * 100 + "%     ");
-        System.out.println(mht.getJaccardCoefficient(0, 4) * 100 + "%");*/
-
-        long finish = System.currentTimeMillis();
-
-        System.out.println();
-        System.out.println(finish - start);
+        //TODO play with regexes
+        Map<Integer, int[]> groundTruth = parseGroundTruthFile();
     }
 }
-
-//TODO implement minhash similarity (compare minhashes)
-//TODO implement MinHashTable class
