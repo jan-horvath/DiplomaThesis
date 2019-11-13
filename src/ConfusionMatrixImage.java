@@ -12,21 +12,24 @@ public class ConfusionMatrixImage {
 
     /**
      *
-     * @param confusionMatrix - numbers are expected to be in range [-1, 1]
+     * @param confusionMatrix - numbers are expected to be in range [-maxAbsoluteValue, maxAbsoluteValue]
      * @param pixelSize - square size in the resulting image dedicated to each element in confusion matrix
+     * @param maxAbsoluteValue
      */
-    public ConfusionMatrixImage(List<List<Double>> confusionMatrix, int pixelSize) {
+    public ConfusionMatrixImage(List<List<Double>> confusionMatrix, int pixelSize, double maxAbsoluteValue) {
         this.pixelSize = pixelSize;
         int size = confusionMatrix.size();
 
         image = new BufferedImage(pixelSize*size, pixelSize*size, BufferedImage.TYPE_3BYTE_BGR);
         for (int row = 0; row < size; ++row) {
             for (int col = 0; col < size; ++col) {
-                double value = confusionMatrix.get(row).get(col);
+                double value = confusionMatrix.get(row).get(col)/maxAbsoluteValue;
+
                 int red =  255 - (int) (-255 * Math.min(0, value));
                 int blue = 255 - (int) ( 255 * Math.max(0, value));
                 int green = Math.min(red, blue);
                 Color color = new Color(red, green, blue);
+
                 for (int k = 0; k < pixelSize; ++k) {
                     for (int l = 0; l < pixelSize; ++l) {
                         image.setRGB(col*pixelSize+k, row*pixelSize+l, color.getRGB());

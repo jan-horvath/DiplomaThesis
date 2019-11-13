@@ -38,6 +38,6 @@ public class Jaccard {
             total += set1[i] + set2[i];
             matching += Math.min(set1[i], set2[i]);
         }
-        return ((double) matching)/set1.length;
+        return ((double) matching)/total;
     }
 }
