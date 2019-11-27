@@ -2,6 +2,15 @@ import java.util.List;
 
 public class Shingles {
 
+    /**
+     * Creates multiset of shingles from the input list.
+     * @param list input
+     * @param minInt minimal integer contained in the list
+     * @param maxInt maximal integer contained in the list
+     * @param shingleSize how big "sliding window" should be considered
+     * @return array of int where
+     * (output[i] = k) means the shingle with index i appeared in the input list k times
+     */
     static int[] createMultisetOfShingles(List<Integer> list, int minInt, int maxInt, int shingleSize) {
         int count = maxInt - minInt + 1;
         int setSize = (int) Math.pow(count, shingleSize);
@@ -17,6 +26,15 @@ public class Shingles {
         return shingles;
     }
 
+    /**
+     * Creates set of shingles from the input list.
+     * @param list input
+     * @param minInt minimal integer contained in the list
+     * @param maxInt maximal integer contained in the list
+     * @param shingleSize how big "sliding window" should be considered
+     * @return array of booleans where
+     * (output[i] = true) means the shingle with index i appeared somewhere in the input
+     */
     static boolean[] createSetOfShingles(List<Integer> list, int minInt, int maxInt, int shingleSize) {
         int count = maxInt - minInt + 1;
         int setSize = (int) Math.pow(count, shingleSize);

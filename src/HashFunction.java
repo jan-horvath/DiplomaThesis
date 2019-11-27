@@ -1,9 +1,13 @@
 import java.math.BigInteger;
 
+/**
+ * This class represents a hash function of the form ax + b mod n
+ * Another useful way to look at this class is that it represents a pseudorandom permutation of numbers {0,...,n-1}
+ */
 public class HashFunction {
-    int modulus;
-    int mult;
-    int add;
+    private int modulus;
+    private int mult;
+    private int add;
 
     public HashFunction(int modulus, int mult, int add) throws ArithmeticException {
         BigInteger b1 = BigInteger.valueOf(modulus);

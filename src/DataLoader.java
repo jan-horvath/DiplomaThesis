@@ -42,7 +42,19 @@ public class DataLoader {
         return groundTruth;
     }
 
-
+    /**
+     * This function expects the data to contain individual MoCap recording represented by motion words.
+     * Every recording should start with:
+     *
+     * #objectKey messif.objects.keys.AbstractObjectKey <sequenceId>_0_0_0
+     * <number_of_motionwords>;mcdr.objects.impl.ObjectMotionWord
+     *
+     * followed by <number_of_motionwords> lines. Each line should contain one motionword (integer)
+     *
+     * @param filename - filename
+     * @return map, which assigns a list of motionwords (including duplicates) to every sequenceId
+     * @throws IOException for non existing file
+     */
     static public Map<Integer, List<Integer>> parseDataFile(String filename) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
         Map<Integer, List<Integer>> motions = new HashMap<>();
