@@ -1,13 +1,14 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class MinHash {
+public class MinHashCreator {
     private int modulo;
     private int hashFunctionCount;
     private List<HashFunction> hashFunctions;
 
-    MinHash(int modulo, int hashFunctionCount) {
+    MinHashCreator(int modulo, int hashFunctionCount) {
         regenerateHashFunctions(modulo, hashFunctionCount);
     }
 
@@ -40,6 +41,7 @@ public class MinHash {
 
     public int[] createMinHash(boolean[] input) {
         int[] minhash = new int[hashFunctionCount];
+        Arrays.fill(minhash, Integer.MAX_VALUE);
         for (int i = 0; i < input.length; ++i) {
             if (input[i]) { //Update hashes
                 for (int j = 0; j < hashFunctions.size(); ++j) {

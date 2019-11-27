@@ -15,6 +15,13 @@ public class DataLoader {
         return matcher.group(1);
     }
 
+    /**
+     * This function requires data to be in the following format: <sequenceId>_<classId>_<offset>_<length>
+     *
+     * @param filename - filename
+     * @return map, which assigns a list of classIds (including duplicates) to every sequenceId
+     * @throws IOException for non existing file
+     */
     static public Map<Integer, List<Integer>> parseGroundTruthFile(String filename) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
         Map<Integer, List<Integer>> groundTruth = new HashMap<>();
@@ -34,6 +41,7 @@ public class DataLoader {
         }
         return groundTruth;
     }
+
 
     static public Map<Integer, List<Integer>> parseDataFile(String filename) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));

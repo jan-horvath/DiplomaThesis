@@ -8,16 +8,14 @@ import java.util.List;
 public class ConfusionMatrixImage {
 
     private BufferedImage image;
-    private int pixelSize;
 
     /**
      *
      * @param confusionMatrix - numbers are expected to be in range [-maxAbsoluteValue, maxAbsoluteValue]
      * @param pixelSize - square size in the resulting image dedicated to each element in confusion matrix
-     * @param maxAbsoluteValue
+     * @param maxAbsoluteValue - This is used to calculate intesity of colors. 100% intensity = +-maxAbsoluteValue
      */
     public ConfusionMatrixImage(List<List<Double>> confusionMatrix, int pixelSize, double maxAbsoluteValue) {
-        this.pixelSize = pixelSize;
         int size = confusionMatrix.size();
 
         image = new BufferedImage(pixelSize*size, pixelSize*size, BufferedImage.TYPE_3BYTE_BGR);
