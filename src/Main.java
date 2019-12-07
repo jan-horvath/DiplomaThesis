@@ -73,13 +73,21 @@ public class Main {
 
 
     public static void main(String[] args) throws IOException {
+        Map<Integer, List<Integer>> GTdata = DataLoader.parseGroundTruthFile(System.getProperty("user.dir") + "\\MW_database\\ground_truth_test2.txt");
+        Map<Integer, boolean[]> setsOfShingles = Shingles.createSetsOfShingles(GTdata, 100, 110, 1);
 
-        List<List<Double>> groundTruthCM = getGroundTruthMatrix();
-        ConfusionMatrixImage groundTruthImage = new ConfusionMatrixImage(groundTruthCM, 5, 0.5);
-        groundTruthImage.saveImage("groundTruthCM.jpg");
+        MinHashCreator mhc = new MinHashCreator(11, 1000000);
+        Map<Integer, int[]> minHashes = mhc.createMinHashes(setsOfShingles);
 
-        List<List<Double>> dataMinhashMatrix = getMinHashMotionMatrix(1);
-        ConfusionMatrixImage motionWordsMinHashMatrix = new ConfusionMatrixImage(dataMinhashMatrix, 5, 1.0);
-        motionWordsMinHashMatrix.saveImage("MW_minhash_matrix.jpg");
+        for (Map.Entry<Integer, int[]> entry : minHashes.entrySet()) {
+            System.out.println(entry.getKey() + ": " +  Arrays.toString(entry.getValue()));
+        }
+
+        JaccardMatrix jaccardMatrixSets = JaccardMatrix.createMatrixFromSets(setsOfShingles);
+        JaccardMatrix jaccardMatrixMinhashes = JaccardMatrix.createMatrixFromMinhashes(minHashes);
+
+        System.out.println(jaccardMatrixSets);
+        System.out.println("_____________________________________________________________");
+        System.out.println(jaccardMatrixMinhashes);
     }
 }

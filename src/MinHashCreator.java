@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * This class contains hash functions and computes min hash for any array of booleans using these functions
@@ -18,6 +15,7 @@ public class MinHashCreator {
     /**
      * Throws away current hash function and generates new ones.
      * @param modulo the hash functions will be able to generate numbers in range (0, modulo-1)
+     *               modulo should be equal to the distance between lowest and highest element + 1
      * @param hashFunctionCount how many hash functions should be created
      */
     public void regenerateHashFunctions(int modulo, int hashFunctionCount) {
@@ -55,14 +53,14 @@ public class MinHashCreator {
 
     /**
      * Creates a minhash for the input
-     * @param input array of booleans which represents a set
+     * @param setOfShingles array of booleans which represents a set
      * @return minhash for the input
      */
-    public int[] createMinHash(boolean[] input) {
+    public int[] createMinHash(boolean[] setOfShingles) {
         int[] minhash = new int[hashFunctionCount];
         Arrays.fill(minhash, Integer.MAX_VALUE);
-        for (int i = 0; i < input.length; ++i) {
-            if (input[i]) { //Update hashes
+        for (int i = 0; i < setOfShingles.length; ++i) {
+            if (setOfShingles[i]) { //Update hashes
                 for (int j = 0; j < hashFunctions.size(); ++j) {
                     int nextHash = hashFunctions.get(j).hash(i);
                     if (nextHash < minhash[j]) {
@@ -72,6 +70,15 @@ public class MinHashCreator {
             }
         }
         return minhash;
+    }
+
+    public Map<Integer, int[]> createMinHashes(Map<Integer, boolean[]> setsOfShingles) {
+        Map<Integer, int[]> minHashedSets = new HashMap<>();
+        for (Map.Entry<Integer, boolean[]> entry : setsOfShingles.entrySet()) {
+            int[] minHashedSet = createMinHash(entry.getValue());
+            minHashedSets.put(entry.getKey(), minHashedSet);
+        }
+        return minHashedSets;
     }
 
     public int getModulo() {

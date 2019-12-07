@@ -14,13 +14,18 @@ public class Jaccard {
             throw new IllegalArgumentException("Input arrays for Jaccard coefficient have different sizes.");
         }
 
-        int matching = 0;
+        int intersection = 0;
+        int union = 0;
+
         for (int i = 0; i < set1.length; ++i) {
-            if ((set1[i]) && (set1[i] == set2[i])) {
-                ++matching;
+            if ((set1[i]) || (set2[i])) {
+                ++union;
+                if (set1[i] == set2[i]) {
+                    ++intersection;
+                }
             }
         }
-        return ((double) matching)/set1.length;
+        return ((double) intersection)/union;
     }
 
     /**
@@ -36,13 +41,15 @@ public class Jaccard {
             throw new IllegalArgumentException("Input arrays for Jaccard coefficient have different sizes.");
         }
 
-        int matching = 0;
+        int intersection = 0;
+        int union = set1.length;
+
         for (int i = 0; i < set1.length; ++i) {
             if (set1[i] == set2[i]) {
-                ++matching;
+                ++intersection;
             }
         }
-        return ((double) matching)/set1.length;
+        return ((double) intersection)/union;
     }
 
     /**
@@ -57,12 +64,12 @@ public class Jaccard {
             throw new IllegalArgumentException("Input arrays for Jaccard coefficient have different sizes.");
         }
 
-        int matching = 0;
-        int total = 0;
+        int intersection = 0;
+        int union = 0;
         for (int i = 0; i < set1.length; ++i) {
-            total += set1[i] + set2[i];
-            matching += Math.min(set1[i], set2[i]);
+            union += set1[i] + set2[i];
+            intersection += Math.min(set1[i], set2[i]);
         }
-        return ((double) matching)/total;
+        return ((double) intersection)/union;
     }
 }
