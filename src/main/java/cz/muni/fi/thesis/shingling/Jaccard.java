@@ -1,3 +1,5 @@
+package cz.muni.fi.thesis.shingling;
+
 /**
  * This class contains static function which compute jaccard coefficients
  */

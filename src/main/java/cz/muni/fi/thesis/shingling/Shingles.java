@@ -1,4 +1,5 @@
-import java.util.Arrays;
+package cz.muni.fi.thesis.shingling;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

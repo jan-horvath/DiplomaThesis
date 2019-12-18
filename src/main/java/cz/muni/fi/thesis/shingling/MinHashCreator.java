@@ -1,3 +1,5 @@
+package cz.muni.fi.thesis.shingling;
+
 import java.util.*;
 
 /**
