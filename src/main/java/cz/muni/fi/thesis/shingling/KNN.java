@@ -13,9 +13,6 @@ public class KNN {
         int[] kHighest = new int[k];
         for (int i = 0; i < k; ++i) {
             kHighest[i] = entries.get(i).recordID;
-            if (kHighest[i] == 0) {
-                System.err.println("Warning: " + i + "th highest is zero!");
-            }
         }
 
         return kHighest;
