@@ -24,8 +24,8 @@ public class KNNTest {
         sets.put(50, new boolean[]{false, false, true, true, false, false, false, false});
 
         JaccardMatrix jaccardMatrix = JaccardMatrix.createMatrixFromSets(sets);
-        KNN_2 = KNN.bulkExtractIndicesOfKHighest(jaccardMatrix, 2);
-        KNN_3 = KNN.bulkExtractIndicesOfKHighest(jaccardMatrix, 3);
+        KNN_2 = KNN.bulkExtractKNNIndices(jaccardMatrix, 2);
+        KNN_3 = KNN.bulkExtractKNNIndices(jaccardMatrix, 3);
     }
 
     @Test
