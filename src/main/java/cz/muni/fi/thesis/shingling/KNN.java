@@ -4,26 +4,23 @@ import java.util.*;
 
 public class KNN {
 
-    private static int getNumberOfEntriesWithValueN(List<JaccardMatrix.JaccardEntry> entries, double n) {
+    private static int getNumberOfEntriesWithValueAtLeastN(List<JaccardMatrix.JaccardEntry> entries, double n) {
         int count = 0;
-        int countNonZero = 0;
         for (JaccardMatrix.JaccardEntry entry : entries) {
-            if (Math.abs(entry.jaccardValue - n) < 0.0001) {
+            if (entry.jaccardValue > n - 0.001) {
                 ++count;
             }
-            if (Math.abs(entry.jaccardValue) > 0.001) {
-                ++countNonZero;
-            }
         }
-        System.err.println(count + "/" + countNonZero);
+        if (count == 0) {
+            throw new IllegalStateException();
+        }
         return count;
     }
 
-    public static Map<Integer, Integer> getNumberOfEntriesWithValueNForEachRow(JaccardMatrix matrix, double n) {
+    public static Map<Integer, Integer> getNumberOfEntriesWithValueAtLeastNForEachRow(JaccardMatrix matrix, double n) {
         Map<Integer, Integer> map = new HashMap<>();
         for (Map.Entry<Integer, List<JaccardMatrix.JaccardEntry>> entry : matrix.getMatrix().entrySet()) {
-            System.err.print(entry.getKey() + ":");
-            map.put(entry.getKey(), getNumberOfEntriesWithValueN(entry.getValue(), n));
+            map.put(entry.getKey(), getNumberOfEntriesWithValueAtLeastN(entry.getValue(), n));
         }
         return map;
     }
@@ -83,8 +80,10 @@ public class KNN {
 
         for (Integer recordingIndex : groundTruth.keySet()) {
             assert(data.containsKey(recordingIndex));
-            average += evaluateKNN(groundTruth.get(recordingIndex), data.get(recordingIndex));
-            ++recordingCount;
+            if (groundTruth.get(recordingIndex).length != 0) {
+                average += evaluateKNN(groundTruth.get(recordingIndex), data.get(recordingIndex));
+                ++recordingCount;
+            }
         }
 
         return average/recordingCount;
