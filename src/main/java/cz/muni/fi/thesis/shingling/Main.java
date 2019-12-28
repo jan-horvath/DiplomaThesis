@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Main {
     private enum Interpretation {
-        SET, MULTISET, MINHASH
+        SET, MULTISET, MINHASH, STRIDED_SET, STRIDED_MULTISET, STRIDED_MINHASH
     }
 
     static private String groundTruthFile = System.getProperty("user.dir") + "\\MW_database\\ground_truth-sequence_actions.txt";
@@ -15,7 +15,7 @@ public class Main {
     private static final int DATA_SHINGLE_SIZE = 2;
     private static final int GT_SHINGLE_SIZE = 1; //ALWAYS 1
     private static final Interpretation GT_Interpretation = Interpretation.SET;
-    private static final Interpretation Data_Interpretation = Interpretation.SET;
+    private static final Interpretation Data_Interpretation = Interpretation.STRIDED_SET;
 
     public static void main(String[] args) throws IOException {
         //Ground truth
@@ -59,34 +59,55 @@ public class Main {
             //Data
             Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
             Shingles.resetMap();
-            for (List<Integer> list : data.values()) {
-                Shingles.addToMap(list, DATA_SHINGLE_SIZE);
-            }
             JaccardMatrix dataMatrix = null;
 
-            MinHashCreator mhc = new MinHashCreator(Shingles.getMapSize(), HASH_FUNCTION_COUNT);
+            MinHashCreator mhc = null;
 
             switch (Data_Interpretation) {
                 case SET: {
+                    Shingles.bulkAddToMap(data, DATA_SHINGLE_SIZE);
                     Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, DATA_SHINGLE_SIZE);
                     dataMatrix = JaccardMatrix.createMatrixFromSets(dataShingles);
                     break;
                 }
                 case MULTISET: {
+                    Shingles.bulkAddToMap(data, DATA_SHINGLE_SIZE);
                     Map<Integer, int[]> dataShingles = Shingles.createMultisetsOfShingles(data, DATA_SHINGLE_SIZE);
                     dataMatrix = JaccardMatrix.createMatrixFromMultisets(dataShingles);
                     break;
                 }
                 case MINHASH: {
+                    Shingles.bulkAddToMap(data, DATA_SHINGLE_SIZE);
+                    mhc = new MinHashCreator(Shingles.getMapSize(), HASH_FUNCTION_COUNT);
                     Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, DATA_SHINGLE_SIZE);
+                    Map<Integer, int[]> dataMinhashes = mhc.createMinHashes(dataShingles);
+                    dataMatrix = JaccardMatrix.createMatrixFromMinhashes(dataMinhashes);
+                    break;
+                }
+                case STRIDED_SET: {
+                    Shingles.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
+                    Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
+                    dataMatrix = JaccardMatrix.createMatrixFromSets(dataShingles);
+                    break;
+                }
+                case STRIDED_MULTISET: {
+                    Shingles.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
+                    Map<Integer, int[]> dataShingles = Shingles.createMultisetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
+                    dataMatrix = JaccardMatrix.createMatrixFromMultisets(dataShingles);
+                    break;
+                }
+                case STRIDED_MINHASH: {
+                    Shingles.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
+                    mhc = new MinHashCreator(Shingles.getMapSize(), HASH_FUNCTION_COUNT);
+                    Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
                     Map<Integer, int[]> dataMinhashes = mhc.createMinHashes(dataShingles);
                     dataMatrix = JaccardMatrix.createMatrixFromMinhashes(dataMinhashes);
                     break;
                 }
             }
 
-            //Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, K_NEAREST_COUNT);
-            //System.out.println("Final evaluation: " + KNN.bulkEvaluateKNN(GT_KNN, data_KNN) * 100 + "%");
+            /*Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, K_NEAREST_COUNT);
+            System.out.println("Final evaluation: " + KNN.bulkEvaluateKNN(GT_KNN, data_KNN) * 100 + "%");*/
 
             //Map<Integer, int[]> data_variableKNN_hundred = KNN.bulkExtractVariableKNNIndices(dataMatrix, hundredPercentEntries);
             //System.out.println("Final evaluation: " + KNN.bulkEvaluateKNN(GT_variableKNN_hundred, data_variableKNN_hundred) * 100 + "%");

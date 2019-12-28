@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,38 @@ public class Shingles {
         }
     }
 
+    public static void bulkAddToMap(Map<Integer, List<Integer>> data, int k) {
+        for (List<Integer> list : data.values()) {
+            Shingles.addToMap(list, k);
+        }
+    }
+
+    private static List<List<Integer>> convertToSequencesWithStride(List<Integer> sequence, int stride) {
+        List<List<Integer>> sequences = new ArrayList<>();
+        for (int i = 0; i < stride; ++i) {
+            sequences.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < sequence.size(); ++i) {
+            sequences.get(i % stride).add(sequence.get(i));
+        }
+
+        return sequences;
+    }
+
+    public static void addToMapWithStride(List<Integer> sequence, int k) {
+        List<List<Integer>> sequences = convertToSequencesWithStride(sequence, 5);
+        for (List<Integer> stridedSequence : sequences) {
+            addToMap(stridedSequence, k);
+        }
+    }
+
+    public static void bulkAddToMapWithStride(Map<Integer, List<Integer>> data, int k) {
+        for (List<Integer> list : data.values()) {
+            Shingles.addToMapWithStride(list, k);
+        }
+    }
+
 
     public static Map<Integer, int[]> createMultisetsOfShingles(Map<Integer, List<Integer>> data, int shingleSize) {
         Map<Integer, int[]> multisetsOfShingles = new HashMap<>();
@@ -61,6 +94,26 @@ public class Shingles {
         return setsOfShingles;
     }
 
+    public static Map<Integer, int[]> createMultisetsOfStridedShingles(Map<Integer, List<Integer>> data, int shingleSize) {
+        Map<Integer, int[]> multisetsOfStridedShingles = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
+            List<List<Integer>> sequences = convertToSequencesWithStride(entry.getValue(), 5);
+            int[] multiset = Shingles.createMultisetOfStridedShingles(sequences, shingleSize);
+            multisetsOfStridedShingles.put(entry.getKey(), multiset);
+        }
+        return multisetsOfStridedShingles;
+    }
+
+    public static Map<Integer, boolean[]> createSetsOfStridedShingles(Map<Integer, List<Integer>> data, int shingleSize) {
+        Map<Integer, boolean[]> setsOfStridedShingles = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
+            List<List<Integer>> sequences = convertToSequencesWithStride(entry.getValue(), 5);
+            boolean[] set = Shingles.createSetOfStridedShingles(sequences, shingleSize);
+            setsOfStridedShingles.put(entry.getKey(), set);
+        }
+        return setsOfStridedShingles;
+    }
+
     /**
      * Creates multiset of shingles from the input list.
      * @param list input
@@ -78,6 +131,20 @@ public class Shingles {
         return shingles;
     }
 
+    public static int[] createMultisetOfStridedShingles(List<List<Integer>> sequences, int shingleSize) {
+        int[] shingles = new int[map.size()];
+
+        for (List<Integer> sequence : sequences) {
+            for (int i = 0; i < sequence.size() - shingleSize + 1; ++i) {
+                int shingleIndex = map.get(new Shingle(sequence.subList(i, i+shingleSize)));
+                ++shingles[shingleIndex];
+            }
+        }
+
+
+        return shingles;
+    }
+
     /**
      * Creates set of shingles from the input list.
      * @param list input
@@ -91,6 +158,18 @@ public class Shingles {
         for (int i = 0; i < list.size() - shingleSize + 1; ++i) {
             int shingleIndex = map.get(new Shingle(list.subList(i, i+shingleSize)));
             shingles[shingleIndex] = true;
+        }
+        return shingles;
+    }
+
+    public static boolean[] createSetOfStridedShingles(List<List<Integer>> sequences, int shingleSize) {
+        boolean[] shingles = new boolean[map.size()];
+
+        for (List<Integer> sequence : sequences) {
+            for (int i = 0; i < sequence.size() - shingleSize + 1; ++i) {
+                int shingleIndex = map.get(new Shingle(sequence.subList(i, i+shingleSize)));
+                shingles[shingleIndex] = true;
+            }
         }
         return shingles;
     }
