@@ -7,13 +7,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class JaccardMatrixTest {
+public class SimilarityMatrixTest {
 
     private boolean areClose(double x, double y) {
         return Math.abs(x - y) < 0.001;
     }
 
-    private boolean containsJaccardEntry(List<JaccardMatrix.JaccardEntry> list, int recordId, double jaccardValue){
+    private boolean containsJaccardEntry(List<SimilarityMatrix.JaccardEntry> list, int recordId, double jaccardValue){
         return list.stream().anyMatch(o -> (o.recordID == recordId) && (areClose(jaccardValue, o.jaccardValue)));
     }
 
@@ -24,7 +24,7 @@ public class JaccardMatrixTest {
         sets.put(2, new boolean[]{false, false, true, true, false});
         sets.put(3, new boolean[]{false, false, false, true, true});
 
-        Map<Integer, List<JaccardMatrix.JaccardEntry>> matrix = JaccardMatrix.createMatrixFromSets(sets).getMatrix();
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromSets(sets).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size() == 3);
@@ -49,7 +49,7 @@ public class JaccardMatrixTest {
         multisets.put(2, new int[]{0,5,5,10,0});
         multisets.put(3, new int[]{0,0,0,2,3});
 
-        Map<Integer, List<JaccardMatrix.JaccardEntry>> matrix = JaccardMatrix.createMatrixFromMultisets(multisets).getMatrix();
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromMultisets(multisets).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size() == 3);
@@ -73,7 +73,7 @@ public class JaccardMatrixTest {
         minhashes.put(2, new int[]{0,1,2,3,4});
         minhashes.put(3, new int[]{0,0,0,0,5});
 
-        Map<Integer, List<JaccardMatrix.JaccardEntry>> matrix = JaccardMatrix.createMatrixFromMinhashes(minhashes).getMatrix();
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromMinhashes(minhashes).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size() == 3);

@@ -18,7 +18,7 @@ public class StridedShinglesTest {
         return Math.abs(x - y) < 0.001;
     }
 
-    private boolean containsJaccardEntry(List<JaccardMatrix.JaccardEntry> list, int recordId, double jaccardValue){
+    private boolean containsJaccardEntry(List<SimilarityMatrix.JaccardEntry> list, int recordId, double jaccardValue){
         return list.stream().anyMatch(o -> (o.recordID == recordId) && (areClose(jaccardValue, o.jaccardValue)));
     }
 
@@ -37,8 +37,8 @@ public class StridedShinglesTest {
     @Test
     public void jaccardOnSetsTest() {
         Map<Integer, boolean[]> setsOfStridedShingles = Shingles.createSetsOfStridedShingles(data, 2);
-        JaccardMatrix jaccardMatrix = JaccardMatrix.createMatrixFromSets(setsOfStridedShingles);
-        Map<Integer, List<JaccardMatrix.JaccardEntry>> matrix = jaccardMatrix.getMatrix();
+        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles);
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0));
         assertThat(containsJaccardEntry(matrix.get(2), 2, 1.0));
@@ -52,8 +52,8 @@ public class StridedShinglesTest {
     @Test
     public void jaccardOnMultisetsTest() {
         Map<Integer, int[]> multisetsOfStridedShingles = Shingles.createMultisetsOfStridedShingles(data, 2);
-        JaccardMatrix jaccardMatrix = JaccardMatrix.createMatrixFromMultisets(multisetsOfStridedShingles);
-        Map<Integer, List<JaccardMatrix.JaccardEntry>> matrix = jaccardMatrix.getMatrix();
+        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromMultisets(multisetsOfStridedShingles);
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 0.5));
         assertThat(containsJaccardEntry(matrix.get(2), 2, 0.5));

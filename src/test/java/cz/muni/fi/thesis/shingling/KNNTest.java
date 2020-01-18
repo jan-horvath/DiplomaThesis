@@ -23,9 +23,9 @@ public class KNNTest {
         sets.put(40, new boolean[]{true, false, true, true, true, true, true, true});
         sets.put(50, new boolean[]{false, false, true, true, false, false, false, false});
 
-        JaccardMatrix jaccardMatrix = JaccardMatrix.createMatrixFromSets(sets);
-        KNN_2 = KNN.bulkExtractKNNIndices(jaccardMatrix, 2);
-        KNN_3 = KNN.bulkExtractKNNIndices(jaccardMatrix, 3);
+        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(sets);
+        KNN_2 = KNN.bulkExtractKNNIndices(similarityMatrix, 2);
+        KNN_3 = KNN.bulkExtractKNNIndices(similarityMatrix, 3);
     }
 
     @Test

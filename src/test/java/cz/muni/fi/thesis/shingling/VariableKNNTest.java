@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class VariableKNNTest {
 
-    private JaccardMatrix nonPartiallyOverlappingMatrix;
-    private JaccardMatrix partiallyOverlappingMatrix;
+    private SimilarityMatrix nonPartiallyOverlappingMatrix;
+    private SimilarityMatrix partiallyOverlappingMatrix;
 
     @Before
     public void jaccardMatrixSetup() {
@@ -24,7 +24,7 @@ public class VariableKNNTest {
         nonPartiallyOverlappingSets.put(4, new boolean[]{false, false, false, false, false, false, false, true});
         nonPartiallyOverlappingSets.put(5, new boolean[]{false, false, false, false, false, false, false, true});
 
-        nonPartiallyOverlappingMatrix = JaccardMatrix.createMatrixFromSets(nonPartiallyOverlappingSets);
+        nonPartiallyOverlappingMatrix = SimilarityMatrix.createMatrixFromSets(nonPartiallyOverlappingSets);
 
 
         Map<Integer, boolean[]> pariallyOverlappingSets = new HashMap<>();
@@ -40,7 +40,7 @@ public class VariableKNNTest {
         pariallyOverlappingSets.put(6, new boolean[]{false, false, false, false, false, false,  true,  true});
         pariallyOverlappingSets.put(7, new boolean[]{false, false, false, false, false, false,  true,  true});
 
-        partiallyOverlappingMatrix = JaccardMatrix.createMatrixFromSets(pariallyOverlappingSets);
+        partiallyOverlappingMatrix = SimilarityMatrix.createMatrixFromSets(pariallyOverlappingSets);
     }
 
     @Test
