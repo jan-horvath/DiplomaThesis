@@ -9,12 +9,28 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DataLoader {
+    static private Pattern numberPattern = Pattern.compile("\\d+");
+
     static private String matchFirstRegex(Pattern pattern, String string) {
         Matcher matcher = pattern.matcher(string);
         if (!matcher.find()) {
             throw new InputMismatchException("Pattern was not found in string.");
         }
         return matcher.group(1);
+    }
+
+    static public int[] matchCommaSeparatedNumbers(String string, int count) {
+        Matcher matcher = numberPattern.matcher(string);
+        if (!matcher.find()) {
+            throw new InputMismatchException("Pattern was not found in string.");
+        }
+
+        int[] numbers = new int[count];
+        for (int i = 0; i < count; ++i) {
+            numbers[i] = Integer.parseInt(matcher.group(0));
+            matcher.find();
+        }
+        return numbers;
     }
 
     /**
@@ -76,6 +92,33 @@ public class DataLoader {
                 for (int i = 0; i < motionWordsCount; ++i) {
                     line = bufferedReader.readLine();
                     motionWords.add(Integer.parseInt(line));
+                }
+
+                motions.put(sequenceId, motionWords);
+            }
+        }
+        return motions;
+    }
+
+    static public Map<Integer, List<int[]>> parseOverlayDataFile(String filename, int overlaysCount) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
+        Map<Integer, List<int[]>> motions = new HashMap<>();
+
+        String line;
+        Pattern sequenceIdPattern = Pattern.compile("ObjectKey (\\d+?)_");
+        Pattern motionWordsCountPattern = Pattern.compile("^(\\d+?);");
+
+        while ((line = bufferedReader.readLine()) != null) {
+            if (line.contains("#objectKey")) {
+
+                Integer sequenceId = Integer.parseInt(matchFirstRegex(sequenceIdPattern, line));
+                line = bufferedReader.readLine();
+                int motionWordsCount = Integer.parseInt(matchFirstRegex(motionWordsCountPattern, line));
+
+                List<int[]> motionWords = new ArrayList<>();
+                for (int i = 0; i < motionWordsCount; ++i) {
+                    line = bufferedReader.readLine();
+                    motionWords.add(matchCommaSeparatedNumbers(line, overlaysCount));
                 }
 
                 motions.put(sequenceId, motionWords);
