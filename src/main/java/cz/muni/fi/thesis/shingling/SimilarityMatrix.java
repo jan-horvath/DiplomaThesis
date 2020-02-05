@@ -5,7 +5,7 @@ import java.util.*;
 public class SimilarityMatrix {
     private Map<Integer, List<JaccardEntry>> matrix = new HashMap<>();
 
-    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data) {
+    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard) {
         SimilarityMatrix similarityMatrix = new SimilarityMatrix();
 
         for (Map.Entry<Integer, boolean[]> entry1 : data.entrySet()) {
@@ -13,7 +13,12 @@ public class SimilarityMatrix {
             List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             for (Map.Entry<Integer, boolean[]> entry2 : data.entrySet()) {
-                double jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue());
+                double jaccardValue;
+                if (weightedJaccard) {
+                    jaccardValue = Jaccard.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), Shingles.getIDF());
+                } else {
+                    jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue());
+                }
                 jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
             }
         }
@@ -96,17 +101,23 @@ public class SimilarityMatrix {
         return ((double) matchCount)/(rec1.size() + rec2.size() - matchCount);
     }
 
-    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired) {
+    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, boolean isSet) {
         SimilarityMatrix similarityMatrix = new SimilarityMatrix();
 
         for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
-            System.out.println(entry1.getKey());
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
             List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
-            for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                double value = multisetSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+            if (isSet) {
+                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                    double value = setSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+                }
+            } else {
+                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                    double value = multisetSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+                }
             }
         }
         return similarityMatrix;

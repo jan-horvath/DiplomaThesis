@@ -1,9 +1,15 @@
 package cz.muni.fi.thesis.shingling;
 
+import java.text.DecimalFormat;
+import java.util.Map;
+
 /**
  * This class contains static function which compute jaccard coefficients
  */
 public class Jaccard {
+
+    public static double oneShingleInfluenceAverage = 0;
+    public static int nonEmptyIntersections = 0;
     /**
      * computeJaccard computes Jaccard coefficient on two sets. The sets are represented by boolean arrays (bitmaps).
      * set[i] = true means that the element i belongs to the set
@@ -28,6 +34,30 @@ public class Jaccard {
             }
         }
         return ((double) intersection)/union;
+    }
+
+    public static double computeWeighedJaccard(boolean[] set1, boolean[] set2, Map<Integer, Double> weights) {
+        double intersection = 0.0;
+        double union = 0.0;
+
+        double oneShingleInfluence = 0.0;
+
+        for (int i = 0; i < set1.length; ++i) {
+            if ((set1[i]) || (set2[i])) {
+                union += weights.get(i);
+                if (set1[i] == set2[i]) {
+                    intersection += weights.get(i);
+                    if (Shingles.getShingleFromID(i).getSize() == 1) {
+                        oneShingleInfluence += weights.get(i);
+                    }
+                }
+            }
+        }
+        if (intersection != 0.0) {
+            oneShingleInfluenceAverage += oneShingleInfluence / intersection;
+            nonEmptyIntersections++;
+        }
+        return  intersection/union;
     }
 
     /**

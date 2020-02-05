@@ -24,7 +24,7 @@ public class SimilarityMatrixTest {
         sets.put(2, new boolean[]{false, false, true, true, false});
         sets.put(3, new boolean[]{false, false, false, true, true});
 
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromSets(sets).getMatrix();
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromSets(sets, false).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size() == 3);

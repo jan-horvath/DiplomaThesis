@@ -37,7 +37,7 @@ public class StridedShinglesTest {
     @Test
     public void jaccardOnSetsTest() {
         Map<Integer, boolean[]> setsOfStridedShingles = Shingles.createSetsOfStridedShingles(data, 2);
-        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles);
+        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles, false);
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0));

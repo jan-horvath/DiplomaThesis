@@ -29,7 +29,7 @@ public class ShinglesCreationTest {
     @Test
     public void oneShingleSetsTest() {
         setUpMap(1);
-        Map<Integer, boolean[]> sets = Shingles.createSetsOfShingles(data, 1);
+        Map<Integer, boolean[]> sets = Shingles.createSetsOfShingles(data, 1, 1);
 
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(2))).isCloseTo(2.0/3, Offset.offset(0.001));
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(3))).isCloseTo(1.0, Offset.offset(0.001));
@@ -49,7 +49,7 @@ public class ShinglesCreationTest {
     @Test
     public void twoShingleSetsTest() {
         setUpMap(2);
-        Map<Integer, boolean[]> sets = Shingles.createSetsOfShingles(data,  2);
+        Map<Integer, boolean[]> sets = Shingles.createSetsOfShingles(data,  2, 2);
 
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(2))).isCloseTo(1.0/3, Offset.offset(0.001));
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(3))).isCloseTo(3.0/5, Offset.offset(0.001));

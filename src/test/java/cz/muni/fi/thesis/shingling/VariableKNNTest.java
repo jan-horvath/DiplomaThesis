@@ -24,7 +24,7 @@ public class VariableKNNTest {
         nonPartiallyOverlappingSets.put(4, new boolean[]{false, false, false, false, false, false, false, true});
         nonPartiallyOverlappingSets.put(5, new boolean[]{false, false, false, false, false, false, false, true});
 
-        nonPartiallyOverlappingMatrix = SimilarityMatrix.createMatrixFromSets(nonPartiallyOverlappingSets);
+        nonPartiallyOverlappingMatrix = SimilarityMatrix.createMatrixFromSets(nonPartiallyOverlappingSets, false);
 
 
         Map<Integer, boolean[]> pariallyOverlappingSets = new HashMap<>();
@@ -40,7 +40,7 @@ public class VariableKNNTest {
         pariallyOverlappingSets.put(6, new boolean[]{false, false, false, false, false, false,  true,  true});
         pariallyOverlappingSets.put(7, new boolean[]{false, false, false, false, false, false,  true,  true});
 
-        partiallyOverlappingMatrix = SimilarityMatrix.createMatrixFromSets(pariallyOverlappingSets);
+        partiallyOverlappingMatrix = SimilarityMatrix.createMatrixFromSets(pariallyOverlappingSets, false);
     }
 
     @Test

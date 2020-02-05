@@ -10,6 +10,14 @@ public final class Shingle {
         this.shingle = shingle;
     }
 
+    public List<Integer> getShingle() {
+        return shingle;
+    }
+
+    public int getSize() {
+        return shingle.size();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

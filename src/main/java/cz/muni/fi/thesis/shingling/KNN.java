@@ -81,7 +81,8 @@ public class KNN {
         for (Integer recordingIndex : groundTruth.keySet()) {
             assert(data.containsKey(recordingIndex));
             if (groundTruth.get(recordingIndex).length != 0) {
-                average += evaluateKNN(groundTruth.get(recordingIndex), data.get(recordingIndex));
+                double average1 = evaluateKNN(groundTruth.get(recordingIndex), data.get(recordingIndex));
+                average += average1;
                 ++recordingCount;
             }
         }
