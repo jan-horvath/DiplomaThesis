@@ -1,12 +1,23 @@
 package cz.muni.fi.thesis.shingling;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import java.util.*;
 
 public class Shingles {
 
     //State of this class
-    private static Map<Shingle, Integer> shingleIDs = new HashMap<>();
     private static Map<Integer, Double> IDF = new HashMap<>();
+    private static BiMap<Shingle, Integer> shingleIDs = HashBiMap.create();
+
+    public static BiMap<Shingle, Integer> getShingleIDs() {
+        return shingleIDs;
+    }
+
+    public static int getNextID() {
+        return nextID;
+    }
 
     public static Map<Integer, Double> getIDF() {
         return IDF;
@@ -24,7 +35,7 @@ public class Shingles {
 
     public static void resetMap() {
         resetNextID();
-        shingleIDs = new HashMap<>();
+        shingleIDs = HashBiMap.create();
     }
 
     public static int getMapSize() {
@@ -32,10 +43,9 @@ public class Shingles {
     }
 
     public static Shingle getShingleFromID(int ID) {
-        for (Map.Entry<Shingle, Integer> entry : shingleIDs.entrySet()) {
-            if (entry.getValue() == ID) {
-                return entry.getKey();
-            }
+        Shingle shingle = shingleIDs.inverse().get(ID);
+        if (shingle != null) {
+            return shingle;
         }
         throw new IllegalStateException("ID not found");
     }

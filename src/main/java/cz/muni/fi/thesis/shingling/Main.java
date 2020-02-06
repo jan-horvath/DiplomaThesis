@@ -1,5 +1,7 @@
 package cz.muni.fi.thesis.shingling;
 
+import com.google.common.collect.BiMap;
+
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -12,7 +14,11 @@ public class Main {
 
     static private String groundTruthFile = System.getProperty("user.dir") + "\\MW_database\\ground_truth-sequence_actions.txt";
     static private String dataFile = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-kmedoids350.data";
-    static private String overlayDataFile = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-overlays5-kmedoids350.data";
+    //static private String overlayDataFile = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-overlays5-kmedoids350.data";
+
+    //testing
+    //static private String dataFile = System.getProperty("user.dir") + "\\MW_database\\test_data_file.txt";
+    //static private String groundTruthFile = System.getProperty("user.dir") + "\\MW_database\\ground_truth_test.txt";
 
     private static final int DATA_SHINGLE_SIZE = 1;
     private static final int GT_SHINGLE_SIZE = 1; //ALWAYS 1
@@ -50,7 +56,160 @@ public class Main {
         return result/(K * GTShingles.size());
     }
 
+    private static int countKShingles(boolean[] shingles, int K) {
+        int counter = 0;
+        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
+        for (int i = 0; i < shingles.length; ++i) {
+            if (shingles[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
+                ++counter;
+            }
+        }
+        return counter;
+    }
+
+    private static double countKShinglesWeights(boolean[] shingles, int K) {
+        double weightsSum = 0.0;
+        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
+        Map<Integer, Double> shingleWeights = Shingles.getIDF();
+        for (int i = 0; i < shingles.length; ++i) {
+            if (shingles[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
+                weightsSum += shingleWeights.get(i);
+            }
+        }
+        return weightsSum;
+    }
+
+    private static double countWeightsTotal(boolean[] shingles) {
+        double weightsSum = 0.0;
+        Map<Integer, Double> shingleWeights = Shingles.getIDF();
+        for (int i = 0; i < shingles.length; ++i) {
+            if (shingles[i]) {
+                weightsSum += shingleWeights.get(i);
+            }
+        }
+        return weightsSum;
+    }
+
+    public static int countMatches(boolean[] set1, boolean[] set2, int K) {
+        int intersection = 0;
+        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
+
+        for (int i = 0; i < set1.length; ++i) {
+            if (set1[i] && set2[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
+                ++intersection;
+            }
+        }
+        return intersection;
+    }
+
+    public static double countWeightsOfMatches(boolean[] set1, boolean[] set2, int K) {
+        double intersection = 0;
+        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
+        Map<Integer, Double> weights = Shingles.getIDF();
+
+        for (int i = 0; i < set1.length; ++i) {
+            if (set1[i] && set2[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
+                intersection += weights.get(i);
+            }
+        }
+        return intersection;
+    }
+
     public static void main(String[] args) throws IOException {
+
+        /*int K = 10;
+
+        Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
+        Shingles.bulkAddToMap(groundTruth, 1);
+        Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
+        SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
+        Map<Integer, int[]> GT_KNN = KNN.bulkExtractKNNIndices(GTMatrix, 1);
+
+        Shingles.resetMap();
+
+        Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
+        Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
+        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1,1);
+        SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
+        Map<Integer, int[]> filtered_data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, 2 * K);*/
+
+
+
+        //Statistics of sequences
+        /*
+        FileWriter fw = new FileWriter(new File("query_shingles_statistics.txt"));
+        DecimalFormat df2 = new DecimalFormat("#.##");
+        DecimalFormat df4 = new DecimalFormat("#.####");
+        final int NEAREST = 5;
+
+        Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
+        Shingles.bulkAddToMap(groundTruth, 1);
+        Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
+        SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
+
+        Shingles.resetMap();
+
+        Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
+        Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
+        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
+        SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
+
+        Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, NEAREST);
+
+        for (Map.Entry<Integer, int[]> entry : data_KNN.entrySet()) {
+            int sequenceID = entry.getKey();
+            fw.write("Query sequence: " + sequenceID + ", countAllMWs=" + data.get(sequenceID).size());
+            fw.write(", totalSumOfWeights=" + df2.format(countWeightsTotal(dataShingles.get(sequenceID))) + "\n");
+            for (int shingleSize = minK; shingleSize <= maxK; ++shingleSize) {
+                int shingleCount = countKShingles(dataShingles.get(sequenceID), shingleSize);
+                double shinglesWeights = countKShinglesWeights(dataShingles.get(sequenceID), shingleSize);
+                fw.write(shingleSize + "-shingles: ");
+                fw.write("countDistinct=" + shingleCount + ", ");
+                fw.write("sumOfWeights=" + df2.format(shinglesWeights) + "\n");
+            }
+
+            List<SimilarityMatrix.JaccardEntry> similarityDistances = dataMatrix.getMatrix().get(sequenceID);
+            List<SimilarityMatrix.JaccardEntry> GTSimilarityDistances = GTMatrix.getMatrix().get(sequenceID);
+
+            double check = 1.1;
+
+            for (int N = 1; N <= NEAREST;  ++N) {
+                SimilarityMatrix.JaccardEntry nearest = similarityDistances.get(N-1);
+                SimilarityMatrix.JaccardEntry GTNearest = GTSimilarityDistances.stream()
+                        .filter(jEntry -> jEntry.recordID == nearest.recordID)
+                        .findFirst().orElse(null);
+
+                if (check - GTNearest.jaccardValue < -0.0001) {
+                    System.out.println(sequenceID);
+                    System.out.println(N + " " + check + " " + GTNearest.jaccardValue);
+                }
+                check = GTNearest.jaccardValue;
+
+                fw.write("    " + N + ". nearest neighbor: " + nearest.recordID);
+                fw.write(", mwDistance=" + df4.format(nearest.jaccardValue));
+                fw.write(", gtDistance=" + df2.format(GTNearest.jaccardValue) + "\n");
+
+                for (int shingleSize = minK; shingleSize <= maxK; ++shingleSize) {
+                    int shingleCount = countKShingles(dataShingles.get(nearest.recordID), shingleSize);
+                    double shinglesWeights = countKShinglesWeights(dataShingles.get(nearest.recordID), shingleSize);
+                    fw.write("        " + shingleSize + "-shingles: ");
+                    fw.write("countDistinct=" + shingleCount + ", ");
+                    fw.write("sumOfWeights=" + df2.format(shinglesWeights) + "\n");
+
+                    int matchCount = countMatches(dataShingles.get(sequenceID), dataShingles.get(nearest.recordID), shingleSize);
+                    double matchWeights = countWeightsOfMatches(dataShingles.get(sequenceID), dataShingles.get(nearest.recordID), shingleSize);
+                    fw.write("        matching " + shingleSize + "-shingles: ");
+                    fw.write("countOfMatches=" + matchCount);
+                    fw.write(", sumOfMatchWeights=" + df2.format(matchWeights) + "\n");
+                }
+            }
+            fw.write("\n");
+        }
+
+        fw.flush();
+        fw.close();
+        */
+
         //#4 - one shingle influence calculation
         /*
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
