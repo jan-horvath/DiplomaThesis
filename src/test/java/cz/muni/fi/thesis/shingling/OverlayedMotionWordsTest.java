@@ -87,13 +87,13 @@ public class OverlayedMotionWordsTest {
         parsedData.put(3, Arrays.asList(new int[]{0,5,4,5,5}, new int[]{5,5,5,5,5}));
 
         SimilarityMatrix oneOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 1, false);
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 2, 1.0/3));
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 3, 1.0/2));
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(2), 3, 1.0/6));
+        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 2, 1.0/3)).isTrue();
+        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 3, 1.0/2)).isTrue();
+        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
 
         SimilarityMatrix twoOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 2, false);
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 2, 1.0/6));
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 3, 0));
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(2), 3, 0));
+        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 2, 1.0/6)).isTrue();
+        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 3, 0.0)).isTrue();
+        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
     }
 }

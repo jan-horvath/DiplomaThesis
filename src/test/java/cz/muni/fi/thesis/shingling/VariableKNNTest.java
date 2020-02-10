@@ -67,9 +67,9 @@ public class VariableKNNTest {
         assertThat(K3.length).isEqualTo(2);
         assertThat(K4.length).isEqualTo(2);
         assertThat(K5.length).isEqualTo(2);
-        assertThat((K3[0] == 4 && K3[1] == 5) || (K3[0] == 5 && K3[1] == 4));
-        assertThat((K4[0] == 3 && K4[1] == 5) || (K4[0] == 5 && K4[1] == 3));
-        assertThat((K5[0] == 3 && K5[1] == 4) || (K5[0] == 4 && K5[1] == 3));
+        assertThat((K3[0] == 4 && K3[1] == 5) || (K3[0] == 5 && K3[1] == 4)).isTrue();
+        assertThat((K4[0] == 3 && K4[1] == 5) || (K4[0] == 5 && K4[1] == 3)).isTrue();
+        assertThat((K5[0] == 3 && K5[1] == 4) || (K5[0] == 4 && K5[1] == 3)).isTrue();
     }
 
     @Test
@@ -95,7 +95,7 @@ public class VariableKNNTest {
         assertThat(K3.length).isEqualTo(2);
         assertThat(variableKNN.get(1)[0]).isEqualTo(3);
         assertThat(variableKNN.get(2)[0]).isEqualTo(3);
-        assertThat((K3[0] == 1 && K3[1] == 2) || (K3[0] == 2 && K3[1] == 1));
+        assertThat((K3[0] == 1 && K3[1] == 2) || (K3[0] == 2 && K3[1] == 1)).isTrue();
 
 
 
@@ -114,10 +114,10 @@ public class VariableKNNTest {
         assertThat(K6[0]).isEqualTo(7);
         assertThat(K7[0]).isEqualTo(6);
 
-        assertThat((K4[1] == 6 && K3[2] == 7) || (K4[1] == 7 && K4[2] == 6));
-        assertThat((K5[1] == 6 && K5[2] == 7) || (K5[1] == 7 && K5[2] == 6));
-        assertThat((K6[1] == 4 && K6[2] == 5) || (K6[1] == 5 && K6[2] == 4));
-        assertThat((K7[1] == 4 && K7[2] == 5) || (K7[1] == 5 && K7[2] == 4));
+        assertThat((K4[1] == 6 && K3[2] == 7) || (K4[1] == 7 && K4[2] == 6)).isTrue();
+        assertThat((K5[1] == 6 && K5[2] == 7) || (K5[1] == 7 && K5[2] == 6)).isTrue();
+        assertThat((K6[1] == 4 && K6[2] == 5) || (K6[1] == 5 && K6[2] == 4)).isTrue();
+        assertThat((K7[1] == 4 && K7[2] == 5) || (K7[1] == 5 && K7[2] == 4)).isTrue();
 
     }
 }

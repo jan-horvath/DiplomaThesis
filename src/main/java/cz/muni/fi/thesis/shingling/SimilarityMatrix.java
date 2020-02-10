@@ -5,7 +5,7 @@ import java.util.*;
 public class SimilarityMatrix {
     private Map<Integer, List<JaccardEntry>> matrix = new HashMap<>();
 
-    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard) {
+    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard, boolean ignoreMaxIDFShingles) {
         SimilarityMatrix similarityMatrix = new SimilarityMatrix();
 
         for (Map.Entry<Integer, boolean[]> entry1 : data.entrySet()) {
@@ -17,12 +17,16 @@ public class SimilarityMatrix {
                 if (weightedJaccard) {
                     jaccardValue = Jaccard.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), Shingles.getIDF());
                 } else {
-                    jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue());
+                    jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue(), ignoreMaxIDFShingles);
                 }
                 jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
             }
         }
         return similarityMatrix;
+    }
+
+    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard) {
+        return createMatrixFromSets(data, weightedJaccard, false);
     }
 
     public static SimilarityMatrix createMatrixFromMinhashes(Map<Integer, int[]> data) {

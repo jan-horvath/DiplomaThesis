@@ -27,7 +27,7 @@ public class SimilarityMatrixTest {
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromSets(sets, false).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
-            assertThat(matrix.get(i).size() == 3);
+            assertThat(matrix.get(i).size()).isEqualTo(3);
         }
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0)).isTrue();
@@ -52,7 +52,7 @@ public class SimilarityMatrixTest {
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromMultisets(multisets).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
-            assertThat(matrix.get(i).size() == 3);
+            assertThat(matrix.get(i).size()).isEqualTo(3);
         }
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 0.5)).isTrue();
@@ -76,7 +76,7 @@ public class SimilarityMatrixTest {
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromMinhashes(minhashes).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
-            assertThat(matrix.get(i).size() == 3);
+            assertThat(matrix.get(i).size()).isEqualTo(3);
         }
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0)).isTrue();

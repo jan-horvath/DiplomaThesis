@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,9 +39,9 @@ public class WeightedJaccardMWTest {
     }
 
     @Test
-    public void weighterJaccardTest() throws IOException {
+    public void weightedJaccardNotIgnoringMaxIDFTest() throws IOException {
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(filename);
-        Shingles.computeInverseDocumentFrequencyForShingles(data, 1, 2);
+        Shingles.computeInverseDocumentFrequencyForShingles(data, 1, 2, false);
         Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1,2);
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> dataMatrix =
                 SimilarityMatrix.createMatrixFromSets(dataShingles, true).getMatrix();
@@ -48,8 +49,23 @@ public class WeightedJaccardMWTest {
         double A = Math.log(1.5);
         double B = Math.log(3);
 
-        assertThat(containsJaccardEntry(dataMatrix.get(100), 101, 2*A/(4*A+4*B)));
-        assertThat(containsJaccardEntry(dataMatrix.get(101), 102,  A/(4*A+2*B)));
-        assertThat(containsJaccardEntry(dataMatrix.get(100), 102,  A/(4*A+2*B)));
+        assertThat(containsJaccardEntry(dataMatrix.get(100), 101, 2*A/(4*A+4*B))).isTrue();
+        assertThat(containsJaccardEntry(dataMatrix.get(101), 102,  A/(4*A+2*B))).isTrue();
+        assertThat(containsJaccardEntry(dataMatrix.get(100), 102,  A/(4*A+2*B))).isTrue();
+    }
+
+    @Test
+    public void weightedJaccardIgnoringMaxIDFTest() throws IOException {
+        Map<Integer, List<Integer>> data = DataLoader.parseDataFile(filename);
+        Shingles.computeInverseDocumentFrequencyForShingles(data, 1, 2, true);
+        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1,2);
+        Map<Integer, List<SimilarityMatrix.JaccardEntry>> dataMatrix =
+                SimilarityMatrix.createMatrixFromSets(dataShingles, true).getMatrix();
+
+        double A = Math.log(1.5);
+
+        assertThat(containsJaccardEntry(dataMatrix.get(100), 101, 2*A/(4*A))).isTrue();
+        assertThat(containsJaccardEntry(dataMatrix.get(101), 102,  A/(4*A))).isTrue();
+        assertThat(containsJaccardEntry(dataMatrix.get(100), 102,  A/(4*A))).isTrue();
     }
 }

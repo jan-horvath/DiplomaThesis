@@ -25,8 +25,8 @@ public class Main {
     private static final Interpretation GT_Interpretation = Interpretation.SET; //ALWAYS SET
     private static final Interpretation Data_Interpretation = Interpretation.SET;
 
-    private static final int minK = 1;
-    private static final int maxK = 3;
+    private static final int minK = 4;
+    private static final int maxK = 4;
 
     private static double thresholdKNN(double threshold, int K) throws IOException {
         Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
@@ -35,11 +35,11 @@ public class Main {
         Shingles.resetMap();
 
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
-        Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
+        Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK, true);
         Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
 
         assert(GTShingles.size() == dataShingles.size());
-        SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
+        SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false, true);
         Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, K);
 
         double result = 0.0;
@@ -115,32 +115,88 @@ public class Main {
         return intersection;
     }
 
+    private static SimilarityMatrix getMatrixFromFilteredData(Map<Integer, int[]> filtered_data, Map<Integer, boolean[]> dataShingles) {
+        SimilarityMatrix filtered_matrix = new SimilarityMatrix();
+        for (Map.Entry<Integer, int[]> entry : filtered_data.entrySet()) {
+            filtered_matrix.getMatrix().put(entry.getKey(), new ArrayList<>());
+            List<SimilarityMatrix.JaccardEntry> jaccardEntries = filtered_matrix.getMatrix().get(entry.getKey());
+            for (int ID : entry.getValue()) {
+                boolean[] set1 = dataShingles.get(entry.getKey());
+                boolean[] set2 = dataShingles.get(ID);
+                double wJaccard = Jaccard.computeWeighedJaccard(set1, set2, Shingles.getIDF());
+                jaccardEntries.add(new SimilarityMatrix.JaccardEntry(ID, wJaccard));
+            }
+        }
+        return filtered_matrix;
+    }
+
     public static void main(String[] args) throws IOException {
 
-        /*int K = 10;
+        //KNN with prior filtering
+        /*for (int K = 2; K <= 18; K+=2) {
+            Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
+            Shingles.bulkAddToMap(groundTruth, 1);
+            //Set ground truth
+            Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
+            SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
+            //Multiset ground truth
+            //Map<Integer, int[]> GTShingles = Shingles.createMultisetsOfShingles(groundTruth, 1);
+            //SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromMultisets(GTShingles);
 
-        Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
-        Shingles.bulkAddToMap(groundTruth, 1);
-        Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
-        SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
-        Map<Integer, int[]> GT_KNN = KNN.bulkExtractKNNIndices(GTMatrix, 1);
+            Shingles.resetMap();
 
-        Shingles.resetMap();
+            Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
+            Shingles.computeInverseDocumentFrequencyForShingles(data, 1, 3);
+            Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1, 1);
+            SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
+            dataShingles = Shingles.createSetsOfShingles(data, 2,3);
 
-        Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
-        Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
-        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1,1);
-        SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
-        Map<Integer, int[]> filtered_data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, 2 * K);*/
+            Map<Integer, int[]> GT_KNN, data_KNN_from_filtered, data_KNN;
 
+            if (K == 2) {
+                Map<Integer, Integer> anySimilarity = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.001);
+                Map<Integer, Integer> anySimilarity2 = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.001);
+                for (Map.Entry<Integer, Integer> entry : anySimilarity2.entrySet()) {
+                    entry.setValue(entry.getValue()*2);
+                }
 
+                Map<Integer, int[]> filtered_data = KNN.bulkExtractVariableKNNIndices(dataMatrix, anySimilarity2);
+                SimilarityMatrix filtered_matrix = getMatrixFromFilteredData(filtered_data, dataShingles);
+                GT_KNN = KNN.bulkExtractVariableKNNIndices(GTMatrix, anySimilarity);
+                data_KNN_from_filtered = KNN.bulkExtractVariableKNNIndices(filtered_matrix, anySimilarity);
+                data_KNN = KNN.bulkExtractVariableKNNIndices(dataMatrix, anySimilarity);
+                System.out.println("Any similarity");
+            } else if (K ==4) {
+                Map<Integer, Integer> maxSimilarity = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.5);
+                Map<Integer, Integer> maxSimilarity2 = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.5);
+                for (Map.Entry<Integer, Integer> entry : maxSimilarity2.entrySet()) {
+                    entry.setValue(entry.getValue()*2);
+                }
+
+                Map<Integer, int[]> filtered_data = KNN.bulkExtractVariableKNNIndices(dataMatrix, maxSimilarity2);
+                SimilarityMatrix filtered_matrix = getMatrixFromFilteredData(filtered_data, dataShingles);
+                GT_KNN = KNN.bulkExtractVariableKNNIndices(GTMatrix, maxSimilarity);
+                data_KNN_from_filtered = KNN.bulkExtractVariableKNNIndices(filtered_matrix, maxSimilarity);
+                data_KNN = KNN.bulkExtractVariableKNNIndices(dataMatrix, maxSimilarity);
+                System.out.println("Max similarity");
+            } else {
+                Map<Integer, int[]> filtered_data = KNN.bulkExtractKNNIndices(dataMatrix, 2 * K);
+                SimilarityMatrix filtered_matrix = getMatrixFromFilteredData(filtered_data, dataShingles);
+                GT_KNN = KNN.bulkExtractKNNIndices(GTMatrix, K);
+                data_KNN_from_filtered = KNN.bulkExtractKNNIndices(filtered_matrix, K);
+                data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, K);
+                System.out.println(K);
+            }
+
+            System.out.println(KNN.bulkEvaluateKNN(GT_KNN, data_KNN_from_filtered));
+            System.out.println(KNN.bulkEvaluateKNN(GT_KNN, data_KNN));
+        }*/
 
         //Statistics of sequences
-        /*
-        FileWriter fw = new FileWriter(new File("query_shingles_statistics.txt"));
+        /*FileWriter fw = new FileWriter(new File("sequence_statistics2.txt"));
         DecimalFormat df2 = new DecimalFormat("#.##");
         DecimalFormat df4 = new DecimalFormat("#.####");
-        final int NEAREST = 5;
+        final int NEAREST = 10;
 
         Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
         Shingles.bulkAddToMap(groundTruth, 1);
@@ -154,9 +210,9 @@ public class Main {
         Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
         SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
 
-        Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, NEAREST);
+        Map<Integer, int[]> filtered_matrix = KNN.bulkExtractKNNIndices(dataMatrix, NEAREST);
 
-        for (Map.Entry<Integer, int[]> entry : data_KNN.entrySet()) {
+        for (Map.Entry<Integer, int[]> entry : filtered_matrix.entrySet()) {
             int sequenceID = entry.getKey();
             fw.write("Query sequence: " + sequenceID + ", countAllMWs=" + data.get(sequenceID).size());
             fw.write(", totalSumOfWeights=" + df2.format(countWeightsTotal(dataShingles.get(sequenceID))) + "\n");
@@ -171,19 +227,11 @@ public class Main {
             List<SimilarityMatrix.JaccardEntry> similarityDistances = dataMatrix.getMatrix().get(sequenceID);
             List<SimilarityMatrix.JaccardEntry> GTSimilarityDistances = GTMatrix.getMatrix().get(sequenceID);
 
-            double check = 1.1;
-
             for (int N = 1; N <= NEAREST;  ++N) {
                 SimilarityMatrix.JaccardEntry nearest = similarityDistances.get(N-1);
                 SimilarityMatrix.JaccardEntry GTNearest = GTSimilarityDistances.stream()
                         .filter(jEntry -> jEntry.recordID == nearest.recordID)
                         .findFirst().orElse(null);
-
-                if (check - GTNearest.jaccardValue < -0.0001) {
-                    System.out.println(sequenceID);
-                    System.out.println(N + " " + check + " " + GTNearest.jaccardValue);
-                }
-                check = GTNearest.jaccardValue;
 
                 fw.write("    " + N + ". nearest neighbor: " + nearest.recordID);
                 fw.write(", mwDistance=" + df4.format(nearest.jaccardValue));
@@ -207,8 +255,7 @@ public class Main {
         }
 
         fw.flush();
-        fw.close();
-        */
+        fw.close();*/
 
         //#4 - one shingle influence calculation
         /*
@@ -222,19 +269,18 @@ public class Main {
         System.out.println(Jaccard.oneShingleInfluenceAverage/58081);*/
 
         // #3 - Threshold KNN
-        /*DecimalFormat df3 = new DecimalFormat("#.##");
+        DecimalFormat df3 = new DecimalFormat("#.##");
         for (int K = 1; K < 20; ++K) {
             System.out.println(df3.format(100*thresholdKNN(0.0, K)));
-        }*/
+        }
 
         // #2 - weighed jaccard
-        /*boolean useNearesNeighbourRatio = false;
-        for (int i = 4; i <= 18; i+=2) {
+        /*for (int i = 4; i <= 18; i+=2) {
             //GT similarity
             Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
-            Shingles.computeInverseDocumentFrequencyForShingles(groundTruth, 1, 1);
+            Shingles.bulkAddToMap(groundTruth, 1);
             //Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
-            //SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, true);
+            //SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
             Map<Integer, int[]> GTShingles = Shingles.createMultisetsOfShingles(groundTruth,1);
             SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromMultisets(GTShingles);
 
@@ -244,46 +290,27 @@ public class Main {
             Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
             Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
             Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
-            SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, true);
+            SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false);
 
             //Evaluation
-            if (useNearesNeighbourRatio) { //Probably has errors, but will not be used
-                KNN.bulkExtractKNNIndices(GTMatrix, 1); //removes most similar (itself) and sorts
-                KNN.bulkExtractKNNIndices(dataMatrix, 1); //removes most similar (itself) and sorts
+            if (i == 4) {
+                Map<Integer, Integer> maxSimilarK = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.5);
+                Map<Integer, int[]> GT_KNN_max = KNN.bulkExtractVariableKNNIndices(GTMatrix, maxSimilarK);
+                Map<Integer, int[]> data_KNN_max = KNN.bulkExtractVariableKNNIndices(dataMatrix, maxSimilarK);
+                System.out.println("Max similarity KNN: " + KNN.bulkEvaluateKNN(GT_KNN_max, data_KNN_max));
+            }
 
-                double result = 0.0;
-                for (Integer recordID : GTMatrix.getMatrix().keySet()) {
-                    double GT_NN_Jaccard = GTMatrix.getMatrix().get(recordID).get(0).jaccardValue;
-                    double data_NN_Jaccard = dataMatrix.getMatrix().get(recordID).get(0).jaccardValue;
-                    double NNR = data_NN_Jaccard/GT_NN_Jaccard;
-                    if (NNR > 1.0) {
-                        System.out.println(recordID + ": " + NNR);
-                    }
-                    result += NNR;
-                }
-                System.out.println(result/dataShingles.size());
-                break;
-            } else {
+            if (i == 6) {
+                Map<Integer, Integer> anySimilarKX = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.01);
+                Map<Integer, int[]> GT_KNN_anyX = KNN.bulkExtractVariableKNNIndices(GTMatrix, anySimilarKX);
+                Map<Integer, int[]> data_KNN_anyX = KNN.bulkExtractVariableKNNIndices(dataMatrix, anySimilarKX);
+                System.out.println("Any similarity KNN: " + KNN.bulkEvaluateKNN(GT_KNN_anyX, data_KNN_anyX));
+            }
 
-                if (i == 4) {
-                    Map<Integer, Integer> maxSimilarK = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.5);
-                    Map<Integer, int[]> GT_KNN_max = KNN.bulkExtractVariableKNNIndices(GTMatrix, maxSimilarK);
-                    Map<Integer, int[]> data_KNN_max = KNN.bulkExtractVariableKNNIndices(dataMatrix, maxSimilarK);
-                    System.out.println("Max similarity KNN: " + KNN.bulkEvaluateKNN(GT_KNN_max, data_KNN_max));
-                }
-
-                if (i == 6) {
-                    Map<Integer, Integer> anySimilarKX = KNN.getNumberOfEntriesWithValueAtLeastNForEachRow(GTMatrix, 0.01);
-                    Map<Integer, int[]> GT_KNN_anyX = KNN.bulkExtractVariableKNNIndices(GTMatrix, anySimilarKX);
-                    Map<Integer, int[]> data_KNN_anyX = KNN.bulkExtractVariableKNNIndices(dataMatrix, anySimilarKX);
-                    System.out.println("Any similarity KNN: " + KNN.bulkEvaluateKNN(GT_KNN_anyX, data_KNN_anyX));
-                }
-
-                if (i >= 8) {
-                    Map<Integer, int[]> GT_KNN = KNN.bulkExtractKNNIndices(GTMatrix, i);
-                    Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, i);
-                    System.out.println(i + "-NN: " + KNN.bulkEvaluateKNN(GT_KNN, data_KNN));
-                }
+            if (i >= 8) {
+                Map<Integer, int[]> GT_KNN = KNN.bulkExtractKNNIndices(GTMatrix, i);
+                Map<Integer, int[]> filtered_matrix = KNN.bulkExtractKNNIndices(dataMatrix, i);
+                System.out.println(i + "-NN: " + KNN.bulkEvaluateKNN(GT_KNN, filtered_matrix));
             }
         }*/
 
@@ -423,7 +450,7 @@ public class Main {
 
                 if ((i == 0) && (R == 0)) System.out.println("# of shingles: " + Shingles.getMapSize());
 
-                Map<Integer, int[]> data_KNN = null;
+                Map<Integer, int[]> filtered_matrix = null;
                 Map<Integer, int[]> data_variableKNN_hundred = null;
                 Map<Integer, int[]> data_variableKNN_aboveZero = null;
 
@@ -431,14 +458,14 @@ public class Main {
 
                 switch (i) {
                     case 0: {
-                        data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, 12);
-                        sum_eval_knn12 += KNN.bulkEvaluateKNN(GT_KNN, data_KNN);
+                        filtered_matrix = KNN.bulkExtractKNNIndices(dataMatrix, 12);
+                        sum_eval_knn12 += KNN.bulkEvaluateKNN(GT_KNN, filtered_matrix);
 
                         break;
                     }
                     case 1: {
-                        data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, 15);
-                        sum_eval_knn15 += KNN.bulkEvaluateKNN(GT_KNN, data_KNN);
+                        filtered_matrix = KNN.bulkExtractKNNIndices(dataMatrix, 15);
+                        sum_eval_knn15 += KNN.bulkEvaluateKNN(GT_KNN, filtered_matrix);
                         break;
                     }
                     case 2: {
