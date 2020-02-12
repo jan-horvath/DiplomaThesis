@@ -1,6 +1,8 @@
 package cz.muni.fi.thesis.shingling;
 
 import com.google.common.collect.BiMap;
+import cz.muni.fi.thesis.shingling.evaluation.KNN;
+import cz.muni.fi.thesis.shingling.evaluation.ThresholdKNN;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -14,7 +16,7 @@ public class Main {
 
     static private String groundTruthFile = System.getProperty("user.dir") + "\\MW_database\\ground_truth-sequence_actions.txt";
     static private String dataFile = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-kmedoids350.data";
-    //static private String overlayDataFile = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-overlays5-kmedoids350.data";
+    static private String overlayDataFile = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-overlays5-kmedoids350.data";
 
     //testing
     //static private String dataFile = System.getProperty("user.dir") + "\\MW_database\\test_data_file.txt";
@@ -25,18 +27,19 @@ public class Main {
     private static final Interpretation GT_Interpretation = Interpretation.SET; //ALWAYS SET
     private static final Interpretation Data_Interpretation = Interpretation.SET;
 
-    private static final int minK = 4;
-    private static final int maxK = 4;
+    private static final int minK = 2;
+    private static final int maxK = 3;
 
-    private static double thresholdKNN(double threshold, int K) throws IOException {
+    private static double thresholdKNN(double threshold, int K, int TFIDF_percentage) throws IOException {
         Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
-        Shingles.bulkAddToMap(groundTruth, 1);
-        Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
-        Shingles.resetMap();
+        ShingleUtility.bulkAddToMap(groundTruth, 1);
+        Map<Integer, boolean[]> GTShingles = ShingleUtility.createSetsOfShingles(groundTruth, 1, 1);
+        ShingleUtility.resetMap();
 
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
-        Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK, true);
-        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
+        ShingleUtility.computeInverseDocumentFrequencyForShingles(data, minK, maxK, true);
+        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShinglesUsingTFIDF(data, minK, maxK, TFIDF_percentage);
+        //Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
 
         assert(GTShingles.size() == dataShingles.size());
         SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false, true);
@@ -58,7 +61,7 @@ public class Main {
 
     private static int countKShingles(boolean[] shingles, int K) {
         int counter = 0;
-        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
+        BiMap<Shingle, Integer> shingleIDs = ShingleUtility.getShingleIDs();
         for (int i = 0; i < shingles.length; ++i) {
             if (shingles[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
                 ++counter;
@@ -69,8 +72,8 @@ public class Main {
 
     private static double countKShinglesWeights(boolean[] shingles, int K) {
         double weightsSum = 0.0;
-        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
-        Map<Integer, Double> shingleWeights = Shingles.getIDF();
+        BiMap<Shingle, Integer> shingleIDs = ShingleUtility.getShingleIDs();
+        Map<Integer, Double> shingleWeights = ShingleUtility.getIDF();
         for (int i = 0; i < shingles.length; ++i) {
             if (shingles[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
                 weightsSum += shingleWeights.get(i);
@@ -81,7 +84,7 @@ public class Main {
 
     private static double countWeightsTotal(boolean[] shingles) {
         double weightsSum = 0.0;
-        Map<Integer, Double> shingleWeights = Shingles.getIDF();
+        Map<Integer, Double> shingleWeights = ShingleUtility.getIDF();
         for (int i = 0; i < shingles.length; ++i) {
             if (shingles[i]) {
                 weightsSum += shingleWeights.get(i);
@@ -92,7 +95,7 @@ public class Main {
 
     public static int countMatches(boolean[] set1, boolean[] set2, int K) {
         int intersection = 0;
-        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
+        BiMap<Shingle, Integer> shingleIDs = ShingleUtility.getShingleIDs();
 
         for (int i = 0; i < set1.length; ++i) {
             if (set1[i] && set2[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
@@ -104,8 +107,8 @@ public class Main {
 
     public static double countWeightsOfMatches(boolean[] set1, boolean[] set2, int K) {
         double intersection = 0;
-        BiMap<Shingle, Integer> shingleIDs = Shingles.getShingleIDs();
-        Map<Integer, Double> weights = Shingles.getIDF();
+        BiMap<Shingle, Integer> shingleIDs = ShingleUtility.getShingleIDs();
+        Map<Integer, Double> weights = ShingleUtility.getIDF();
 
         for (int i = 0; i < set1.length; ++i) {
             if (set1[i] && set2[i] && (shingleIDs.inverse().get(i).getSize() == K)) {
@@ -123,7 +126,7 @@ public class Main {
             for (int ID : entry.getValue()) {
                 boolean[] set1 = dataShingles.get(entry.getKey());
                 boolean[] set2 = dataShingles.get(ID);
-                double wJaccard = Jaccard.computeWeighedJaccard(set1, set2, Shingles.getIDF());
+                double wJaccard = Jaccard.computeWeighedJaccard(set1, set2, ShingleUtility.getIDF());
                 jaccardEntries.add(new SimilarityMatrix.JaccardEntry(ID, wJaccard));
             }
         }
@@ -270,26 +273,43 @@ public class Main {
 
         // #3 - Threshold KNN
         DecimalFormat df3 = new DecimalFormat("#.##");
-        for (int K = 1; K < 20; ++K) {
-            System.out.println(df3.format(100*thresholdKNN(0.0, K)));
+        for (int topXpercent = 10; topXpercent <= 100; topXpercent += 10) {
+            System.out.println("\nX = " + topXpercent);
+            for (int K = 1; K <= 15; ++K) {
+                Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
+                ShingleUtility.bulkAddToMap(groundTruth, 1);
+                Map<Integer, boolean[]> GTShingles = ShingleUtility.createSetsOfShingles(groundTruth, 1, 1);
+                ShingleUtility.resetMap();
+
+                Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
+                ShingleUtility.computeInverseDocumentFrequencyForShingles(data, minK, maxK, true);
+                Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShinglesUsingTFIDF(data, minK, maxK, topXpercent);
+                //Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
+
+                assert(GTShingles.size() == dataShingles.size());
+                SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false, true);
+                Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, K);
+
+                System.out.println(df3.format(100*ThresholdKNN.evaluate(GTShingles, data_KNN, 0.0)));
+            }
         }
 
         // #2 - weighed jaccard
         /*for (int i = 4; i <= 18; i+=2) {
             //GT similarity
             Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
-            Shingles.bulkAddToMap(groundTruth, 1);
-            //Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, 1, 1);
+            ShingleUtility.bulkAddToMap(groundTruth, 1);
+            //Map<Integer, boolean[]> GTShingles = ShingleUtility.createSetsOfShingles(groundTruth, 1, 1);
             //SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
-            Map<Integer, int[]> GTShingles = Shingles.createMultisetsOfShingles(groundTruth,1);
+            Map<Integer, int[]> GTShingles = ShingleUtility.createMultisetsOfShingles(groundTruth,1);
             SimilarityMatrix GTMatrix = SimilarityMatrix.createMatrixFromMultisets(GTShingles);
 
-            Shingles.resetMap();
+            ShingleUtility.resetMap();
 
             //Data similarity
             Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
-            Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
-            Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
+            ShingleUtility.computeInverseDocumentFrequencyForShingles(data, minK, maxK, false);
+            Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, minK, maxK);
             SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false);
 
             //Evaluation
@@ -312,21 +332,11 @@ public class Main {
                 Map<Integer, int[]> filtered_matrix = KNN.bulkExtractKNNIndices(dataMatrix, i);
                 System.out.println(i + "-NN: " + KNN.bulkEvaluateKNN(GT_KNN, filtered_matrix));
             }
-        }*/
-
-        // Storing shingle weights
-        /*FileWriter fw = new FileWriter(new File("shingleWeights.txt"));
-        for (Map.Entry<Shingle, Double> shingleWeight : shingleWeights.entrySet()) {
-            StringBuilder sb = new StringBuilder();
-            for (Integer s : shingleWeight.getKey().getShingle()) {
-                sb.append(s).append(",");
-            }
-            String str = sb.toString();
-            fw.write(str.substring(0, str.length()-1) + " " + shingleWeight.getValue() + "\n");
-        }*/
+        }
 
         // #1
-        /*//Ground truth
+        /*
+        //Ground truth
         Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
         SimilarityMatrix GTMatrix;
 
@@ -345,19 +355,19 @@ public class Main {
 
             for (int i = 0; i < 4; ++i) {
 
-                Shingles.resetMap();
+                ShingleUtility.resetMap();
                 for (List<Integer> list : groundTruth.values()) {
-                    Shingles.addToMap(list, GT_SHINGLE_SIZE);
+                    ShingleUtility.addToMap(list, GT_SHINGLE_SIZE);
                 }
 
                 switch (GT_Interpretation) {
                     case SET: {
-                        Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(groundTruth, GT_SHINGLE_SIZE, 1);
+                        Map<Integer, boolean[]> GTShingles = ShingleUtility.createSetsOfShingles(groundTruth, GT_SHINGLE_SIZE, 1);
                         GTMatrix = SimilarityMatrix.createMatrixFromSets(GTShingles, false);
                         break;
                     }
                     case MULTISET: {
-                        Map<Integer, int[]> GTShingles = Shingles.createMultisetsOfShingles(groundTruth, GT_SHINGLE_SIZE);
+                        Map<Integer, int[]> GTShingles = ShingleUtility.createMultisetsOfShingles(groundTruth, GT_SHINGLE_SIZE);
                         GTMatrix = SimilarityMatrix.createMatrixFromMultisets(GTShingles);
                         break;
                     }
@@ -394,48 +404,48 @@ public class Main {
                 //Data
                 Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
                 Map<Integer, List<int[]>> overlayData = DataLoader.parseOverlayDataFile(overlayDataFile,5);
-                Shingles.resetMap();
+                ShingleUtility.resetMap();
                 SimilarityMatrix dataMatrix = null;
 
                 MinHashCreator mhc = null;
 
                 switch (Data_Interpretation) {
                     case SET: {
-                        Shingles.bulkAddToMap(data, DATA_SHINGLE_SIZE);
-                        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, DATA_SHINGLE_SIZE, 1);
+                        ShingleUtility.bulkAddToMap(data, DATA_SHINGLE_SIZE);
+                        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, DATA_SHINGLE_SIZE, 1);
                         dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false);
                         break;
                     }
                     case MULTISET: {
-                        Shingles.bulkAddToMap(data, DATA_SHINGLE_SIZE);
-                        Map<Integer, int[]> dataShingles = Shingles.createMultisetsOfShingles(data, DATA_SHINGLE_SIZE);
+                        ShingleUtility.bulkAddToMap(data, DATA_SHINGLE_SIZE);
+                        Map<Integer, int[]> dataShingles = ShingleUtility.createMultisetsOfShingles(data, DATA_SHINGLE_SIZE);
                         dataMatrix = SimilarityMatrix.createMatrixFromMultisets(dataShingles);
                         break;
                     }
                     case MINHASH: {
-                        Shingles.bulkAddToMap(data, DATA_SHINGLE_SIZE);
-                        mhc = new MinHashCreator(Shingles.getMapSize(), HASH_FUNCTION_COUNT);
-                        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, DATA_SHINGLE_SIZE, 1);
+                        ShingleUtility.bulkAddToMap(data, DATA_SHINGLE_SIZE);
+                        mhc = new MinHashCreator(ShingleUtility.getShingleIDs().size(), HASH_FUNCTION_COUNT);
+                        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, DATA_SHINGLE_SIZE, 1);
                         Map<Integer, int[]> dataMinhashes = mhc.createMinHashes(dataShingles);
                         dataMatrix = SimilarityMatrix.createMatrixFromMinhashes(dataMinhashes);
                         break;
                     }
                     case STRIDED_SET: {
-                        Shingles.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
-                        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
+                        ShingleUtility.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
+                        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
                         dataMatrix = SimilarityMatrix.createMatrixFromSets(dataShingles, false);
                         break;
                     }
                     case STRIDED_MULTISET: {
-                        Shingles.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
-                        Map<Integer, int[]> dataShingles = Shingles.createMultisetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
+                        ShingleUtility.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
+                        Map<Integer, int[]> dataShingles = ShingleUtility.createMultisetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
                         dataMatrix = SimilarityMatrix.createMatrixFromMultisets(dataShingles);
                         break;
                     }
                     case STRIDED_MINHASH: {
-                        Shingles.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
-                        mhc = new MinHashCreator(Shingles.getMapSize(), HASH_FUNCTION_COUNT);
-                        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
+                        ShingleUtility.bulkAddToMapWithStride(data, DATA_SHINGLE_SIZE);
+                        mhc = new MinHashCreator(ShingleUtility.getShingleIDs().size(), HASH_FUNCTION_COUNT);
+                        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfStridedShingles(data, DATA_SHINGLE_SIZE);
                         Map<Integer, int[]> dataMinhashes = mhc.createMinHashes(dataShingles);
                         dataMatrix = SimilarityMatrix.createMatrixFromMinhashes(dataMinhashes);
                         break;
@@ -448,7 +458,7 @@ public class Main {
                     }
                 }
 
-                if ((i == 0) && (R == 0)) System.out.println("# of shingles: " + Shingles.getMapSize());
+                if ((i == 0) && (R == 0)) System.out.println("# of shingles: " + ShingleUtility.getShingleIDs().size());
 
                 Map<Integer, int[]> filtered_matrix = null;
                 Map<Integer, int[]> data_variableKNN_hundred = null;

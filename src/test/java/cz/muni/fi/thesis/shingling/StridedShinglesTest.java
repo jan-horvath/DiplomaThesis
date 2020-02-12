@@ -31,12 +31,12 @@ public class StridedShinglesTest {
         data.put(2, Arrays.asList( 5,15,25,35,45, 6,16,26,36,46, 0, 0, 0));
         data.put(3, Arrays.asList(25,16,16,99,98,26, 0, 0));
 
-        Shingles.bulkAddToMapWithStride(data, 2);
+        ShingleUtility.bulkAddToMapWithStride(data, 2);
     }
 
     @Test
     public void jaccardOnSetsTest() {
-        Map<Integer, boolean[]> setsOfStridedShingles = Shingles.createSetsOfStridedShingles(data, 2);
+        Map<Integer, boolean[]> setsOfStridedShingles = ShingleUtility.createSetsOfStridedShingles(data, 2);
         SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles, false);
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
 
@@ -51,7 +51,7 @@ public class StridedShinglesTest {
 
     @Test
     public void jaccardOnMultisetsTest() {
-        Map<Integer, int[]> multisetsOfStridedShingles = Shingles.createMultisetsOfStridedShingles(data, 2);
+        Map<Integer, int[]> multisetsOfStridedShingles = ShingleUtility.createMultisetsOfStridedShingles(data, 2);
         SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromMultisets(multisetsOfStridedShingles);
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
 

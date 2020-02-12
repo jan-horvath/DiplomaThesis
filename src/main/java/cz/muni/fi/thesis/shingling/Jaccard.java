@@ -1,8 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
-import java.text.DecimalFormat;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This class contains static function which compute jaccard coefficients
@@ -18,7 +16,7 @@ public class Jaccard {
      * @param set2 second set
      * @return Jaccard coefficient for sets. This coefficient is in range (0,1)
      */
-    public static double computeJaccard(boolean[] set1, boolean[] set2, boolean ignoreMaxIDFShingles) {
+    public static double computeJaccard(boolean[] set1, boolean[] set2) {
         if (set1.length != set2.length) {
             throw new IllegalArgumentException("Input arrays for Jaccard coefficient have different sizes.");
         }
@@ -26,11 +24,7 @@ public class Jaccard {
         int intersection = 0;
         int union = 0;
 
-        Set<Integer> maxIDFShingles = Shingles.getMaxIDFShingles();
         for (int i = 0; i < set1.length; ++i) {
-            if (ignoreMaxIDFShingles && maxIDFShingles.contains(i)) {
-                continue;
-            }
             if ((set1[i]) || (set2[i])) {
                 ++union;
                 if (set1[i] == set2[i]) {
@@ -39,10 +33,6 @@ public class Jaccard {
             }
         }
         return ((double) intersection)/union;
-    }
-
-    public static double computeJaccard(boolean[] set1, boolean[] set2) {
-        return computeJaccard(set1, set2, false);
     }
 
     public static double computeWeighedJaccard(boolean[] set1, boolean[] set2, Map<Integer, Double> weights) {
@@ -56,7 +46,7 @@ public class Jaccard {
                 union += weights.get(i);
                 if (set1[i] == set2[i]) {
                     intersection += weights.get(i);
-                    if (Shingles.getShingleFromID(i).getSize() == 1) {
+                    if (ShingleUtility.getShingleFromID(i).getSize() == 1) {
                         oneShingleInfluence += weights.get(i);
                     }
                 }

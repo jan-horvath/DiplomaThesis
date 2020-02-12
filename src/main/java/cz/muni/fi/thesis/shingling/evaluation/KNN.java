@@ -1,4 +1,6 @@
-package cz.muni.fi.thesis.shingling;
+package cz.muni.fi.thesis.shingling.evaluation;
+
+import cz.muni.fi.thesis.shingling.SimilarityMatrix;
 
 import java.util.*;
 

@@ -20,16 +20,16 @@ public class ShinglesCreationTest {
     }
 
     public void setUpMap(int k) {
-        Shingles.resetMap();
-        Shingles.addToMap(data.get(1), k);
-        Shingles.addToMap(data.get(2), k);
-        Shingles.addToMap(data.get(3), k);
+        ShingleUtility.resetMap();
+        ShingleUtility.addToMap(data.get(1), k);
+        ShingleUtility.addToMap(data.get(2), k);
+        ShingleUtility.addToMap(data.get(3), k);
     }
 
     @Test
     public void oneShingleSetsTest() {
         setUpMap(1);
-        Map<Integer, boolean[]> sets = Shingles.createSetsOfShingles(data, 1, 1);
+        Map<Integer, boolean[]> sets = ShingleUtility.createSetsOfShingles(data, 1, 1);
 
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(2))).isCloseTo(2.0/3, Offset.offset(0.001));
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(3))).isCloseTo(1.0, Offset.offset(0.001));
@@ -39,7 +39,7 @@ public class ShinglesCreationTest {
     @Test
     public void oneShingleMultisetsTest() {
         setUpMap(1);
-        Map<Integer, int[]> multisets = Shingles.createMultisetsOfShingles(data,  1);
+        Map<Integer, int[]> multisets = ShingleUtility.createMultisetsOfShingles(data,  1);
 
         assertThat(Jaccard.computeJaccardOnMultisets(multisets.get(1), multisets.get(2))).isCloseTo(1.0/3, Offset.offset(0.001));
         assertThat(Jaccard.computeJaccardOnMultisets(multisets.get(1), multisets.get(3))).isCloseTo(4.0/11, Offset.offset(0.001));
@@ -49,7 +49,7 @@ public class ShinglesCreationTest {
     @Test
     public void twoShingleSetsTest() {
         setUpMap(2);
-        Map<Integer, boolean[]> sets = Shingles.createSetsOfShingles(data,  2, 2);
+        Map<Integer, boolean[]> sets = ShingleUtility.createSetsOfShingles(data,  2, 2);
 
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(2))).isCloseTo(1.0/3, Offset.offset(0.001));
         assertThat(Jaccard.computeJaccard(sets.get(1), sets.get(3))).isCloseTo(3.0/5, Offset.offset(0.001));

@@ -5,8 +5,50 @@ import java.util.*;
 public class SimilarityMatrix {
     private Map<Integer, List<JaccardEntry>> matrix = new HashMap<>();
 
+    public static class JaccardEntry implements Comparable<JaccardEntry> {
+        public final int recordID;
+        public final double jaccardValue;
+
+        public JaccardEntry(int recordID, double jaccardValue) {
+            this.recordID = recordID;
+            this.jaccardValue = jaccardValue;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            JaccardEntry entry = (JaccardEntry) o;
+            return Double.compare(entry.jaccardValue, jaccardValue) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(jaccardValue);
+        }
+
+        @Override
+        public int compareTo(JaccardEntry o) {
+            return Double.compare(jaccardValue, o.jaccardValue);
+        }
+
+        @Override
+        public String toString() {
+            return "(" + recordID + ", " + jaccardValue + ")";
+        }
+    }
+
     public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard, boolean ignoreMaxIDFShingles) {
         SimilarityMatrix similarityMatrix = new SimilarityMatrix();
+
+        if (ignoreMaxIDFShingles) {
+            for (Map.Entry<Integer, boolean[]> entry : data.entrySet()) {
+                boolean[] set = entry.getValue();
+                for (int i : ShingleUtility.getMaxIDFShingles()) {
+                    set[i] = false;
+                }
+            }
+        }
 
         for (Map.Entry<Integer, boolean[]> entry1 : data.entrySet()) {
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
@@ -15,9 +57,9 @@ public class SimilarityMatrix {
             for (Map.Entry<Integer, boolean[]> entry2 : data.entrySet()) {
                 double jaccardValue;
                 if (weightedJaccard) {
-                    jaccardValue = Jaccard.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), Shingles.getIDF());
+                    jaccardValue = Jaccard.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), ShingleUtility.getIDF());
                 } else {
-                    jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue(), ignoreMaxIDFShingles);
+                    jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue());
                 }
                 jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
             }
@@ -57,6 +99,32 @@ public class SimilarityMatrix {
             }
         }
         return similarityMatrix;
+    }
+
+    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, boolean isSet) {
+        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
+
+        for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
+            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
+            List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+
+            if (isSet) {
+                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                    double value = setSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+                }
+            } else {
+                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                    double value = multisetSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+                }
+            }
+        }
+        return similarityMatrix;
+    }
+
+    public Map<Integer, List<JaccardEntry>> getMatrix() {
+        return matrix;
     }
 
     private static boolean overlayMotionWordsMatch(int[] mw1, int[] mw2, int matchingsRequired) {
@@ -99,69 +167,10 @@ public class SimilarityMatrix {
                     break;
                 }
             }
-            if (matchFound) ++matchCount;
+            if (matchFound) {++matchCount;}
             matchFound = false;
         }
         return ((double) matchCount)/(rec1.size() + rec2.size() - matchCount);
-    }
-
-    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, boolean isSet) {
-        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
-
-        for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
-            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
-
-            if (isSet) {
-                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                    double value = setSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
-                }
-            } else {
-                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                    double value = multisetSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
-                }
-            }
-        }
-        return similarityMatrix;
-    }
-
-    public Map<Integer, List<JaccardEntry>> getMatrix() {
-        return matrix;
-    }
-
-    public static class JaccardEntry implements Comparable<JaccardEntry> {
-        public final int recordID;
-        public final double jaccardValue;
-
-        public JaccardEntry(int recordID, double jaccardValue) {
-            this.recordID = recordID;
-            this.jaccardValue = jaccardValue;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            JaccardEntry entry = (JaccardEntry) o;
-            return Double.compare(entry.jaccardValue, jaccardValue) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(jaccardValue);
-        }
-
-        @Override
-        public int compareTo(JaccardEntry o) {
-            return Double.compare(jaccardValue, o.jaccardValue);
-        }
-
-        @Override
-        public String toString() {
-            return "(" + recordID + ", " + jaccardValue + ")";
-        }
     }
 
     @Override

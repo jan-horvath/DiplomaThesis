@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +40,8 @@ public class WeightedJaccardMWTest {
     @Test
     public void weightedJaccardNotIgnoringMaxIDFTest() throws IOException {
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(filename);
-        Shingles.computeInverseDocumentFrequencyForShingles(data, 1, 2, false);
-        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1,2);
+        ShingleUtility.computeInverseDocumentFrequencyForShingles(data, 1, 2, false);
+        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, 1,2);
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> dataMatrix =
                 SimilarityMatrix.createMatrixFromSets(dataShingles, true).getMatrix();
 
@@ -57,8 +56,8 @@ public class WeightedJaccardMWTest {
     @Test
     public void weightedJaccardIgnoringMaxIDFTest() throws IOException {
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(filename);
-        Shingles.computeInverseDocumentFrequencyForShingles(data, 1, 2, true);
-        Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, 1,2);
+        ShingleUtility.computeInverseDocumentFrequencyForShingles(data, 1, 2, true);
+        Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, 1,2);
         Map<Integer, List<SimilarityMatrix.JaccardEntry>> dataMatrix =
                 SimilarityMatrix.createMatrixFromSets(dataShingles, true).getMatrix();
 

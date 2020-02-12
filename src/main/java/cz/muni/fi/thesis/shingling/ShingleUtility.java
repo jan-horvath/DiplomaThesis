@@ -3,15 +3,22 @@ package cz.muni.fi.thesis.shingling;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
-public class Shingles {
+public class ShingleUtility {
 
     //State of this class
     private static Map<Integer, Double> IDF = new HashMap<>();
     private static BiMap<Shingle, Integer> shingleIDs = HashBiMap.create();
     private static Set<Integer> maxIDFShingles = new HashSet<>();
+
+    public static void setShingleIDs(BiMap<Shingle, Integer> shingleIDs) {
+        ShingleUtility.shingleIDs = shingleIDs;
+    }
+
+    public static void setIDF(Map<Integer, Double> IDF) {
+        ShingleUtility.IDF = IDF;
+    }
 
     public static Set<Integer> getMaxIDFShingles() {
         return maxIDFShingles;
@@ -19,10 +26,6 @@ public class Shingles {
 
     public static BiMap<Shingle, Integer> getShingleIDs() {
         return shingleIDs;
-    }
-
-    public static int getNextID() {
-        return nextID;
     }
 
     public static Map<Integer, Double> getIDF() {
@@ -42,10 +45,6 @@ public class Shingles {
     public static void resetMap() {
         resetNextID();
         shingleIDs = HashBiMap.create();
-    }
-
-    public static int getMapSize() {
-        return shingleIDs.size();
     }
 
     public static Shingle getShingleFromID(int ID) {
@@ -72,7 +71,7 @@ public class Shingles {
 
     public static void bulkAddToMap(Map<Integer, List<Integer>> data, int k) {
         for (List<Integer> list : data.values()) {
-            Shingles.addToMap(list, k);
+            ShingleUtility.addToMap(list, k);
         }
     }
 
@@ -87,7 +86,7 @@ public class Shingles {
         return shinglesFound;
     }
 
-    public static void computeInverseDocumentFrequencyForShingles(Map<Integer, List<Integer>> data, int minK, int maxK, boolean ignoreMaxIDF) {
+    public static void computeInverseDocumentFrequencyForShingles(Map<Integer, List<Integer>> data, int minK, int maxK, boolean computeMaxIDFShingles) {
         Map<Shingle, Integer> shingleOccurrences = new HashMap<>();
         for (List<Integer> sequence : data.values()) {
             Set<Shingle> shinglesFound = getShinglesFromSequence(sequence, minK, maxK);
@@ -108,42 +107,13 @@ public class Shingles {
         double size = data.size();
 
         for (Map.Entry<Shingle, Integer> entry : shingleOccurrences.entrySet()) {
-            if (ignoreMaxIDF && entry.getValue() == 1) {
+            if (computeMaxIDFShingles && entry.getValue() == 1) {
                 IDF.put(shingleIDs.get(entry.getKey()), 0.0);
                 maxIDFShingles.add(shingleIDs.get(entry.getKey()));
             } else {
                 IDF.put(shingleIDs.get(entry.getKey()), Math.log(size / entry.getValue()));
             }
         }
-
-        /*
-        Len vypisy
-        double min1 = 10.0, min2 = 10.0, min3 = 10.0;
-        double max1 = 0.0, max2 = 0.0, max3 = 0.0;
-
-        for (Map.Entry<Integer, Double> entry : IDF.entrySet()) {
-            if (entry.getValue() > Math.log(241) - 0.003) {continue;}
-            switch (shingleIDs.inverse().get(entry.getKey()).getSize()) {
-                case 1 : {
-                    min1 = Math.min(min1, entry.getValue());
-                    max1 = Math.max(max1, entry.getValue());
-                    break;
-                }
-                case 2 : {
-                    min2 = Math.min(min2, entry.getValue());
-                    max2 = Math.max(max2, entry.getValue());
-                    break;
-                }
-                case 3: {
-                    min3 = Math.min(min3, entry.getValue());
-                    max3 = Math.max(max3, entry.getValue());
-                    break;
-                }
-            }
-        }
-        System.out.println("MIN/MAX weights for 1-shingles: " + min1 + "\\" + max1);
-        System.out.println("MIN/MAX weights for 2-shingles: " + min2 + "\\" + max2);
-        System.out.println("MIN/MAX weights for 3-shingles: " + min3 + "\\" + max3);*/
     }
 
     private static List<List<Integer>> convertToSequencesWithStride(List<Integer> sequence, int stride) {
@@ -159,7 +129,7 @@ public class Shingles {
         return sequences;
     }
 
-    public static void addToMapWithStride(List<Integer> sequence, int k) {
+    private static void addToMapWithStride(List<Integer> sequence, int k) {
         List<List<Integer>> sequences = convertToSequencesWithStride(sequence, 5);
         for (List<Integer> stridedSequence : sequences) {
             addToMap(stridedSequence, k);
@@ -168,15 +138,14 @@ public class Shingles {
 
     public static void bulkAddToMapWithStride(Map<Integer, List<Integer>> data, int k) {
         for (List<Integer> list : data.values()) {
-            Shingles.addToMapWithStride(list, k);
+            ShingleUtility.addToMapWithStride(list, k);
         }
     }
-
 
     public static Map<Integer, int[]> createMultisetsOfShingles(Map<Integer, List<Integer>> data, int shingleSize) {
         Map<Integer, int[]> multisetsOfShingles = new HashMap<>();
         for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
-            int[] multiset = Shingles.createMultisetOfShingles(entry.getValue(), shingleSize);
+            int[] multiset = ShingleUtility.createMultisetOfShingles(entry.getValue(), shingleSize);
             multisetsOfShingles.put(entry.getKey(), multiset);
         }
         return multisetsOfShingles;
@@ -185,17 +154,53 @@ public class Shingles {
     public static Map<Integer, boolean[]> createSetsOfShingles(Map<Integer, List<Integer>> data, int minK, int maxK) {
         Map<Integer, boolean[]> setsOfShingles = new HashMap<>();
         for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
-            boolean[] set = Shingles.createSetOfShingles(entry.getValue(), minK, maxK);
+            boolean[] set = ShingleUtility.createSetOfShingles(entry.getValue(), minK, maxK);
             setsOfShingles.put(entry.getKey(), set);
         }
         return setsOfShingles;
+    }
+
+    public static Map<Integer, boolean[]> createSetsOfShinglesUsingTFIDF(Map<Integer, List<Integer>> data, int minK, int maxK, int percentage) {
+        Map<Integer, boolean[]> setsOfShingles = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
+            boolean[] set = ShingleUtility.createSetOfShinglesUsingTFIDF(entry.getValue(), minK, maxK, percentage);
+            setsOfShingles.put(entry.getKey(), set);
+        }
+
+        return setsOfShingles;
+    }
+
+    private static boolean[] createSetOfShinglesUsingTFIDF(List<Integer> list, int minK, int maxK, int percentage) {
+        Map<Integer, Double> shinglesWithTFIDF = new HashMap();
+
+        for (int K = minK; K <= maxK; ++K) {
+            for (int i = 0; i < list.size() - K + 1; ++i) {
+                int shingleIndex = shingleIDs.get(new Shingle(list.subList(i, i + K)));
+                if (!shinglesWithTFIDF.containsKey(shingleIndex)) {
+                    shinglesWithTFIDF.put(shingleIndex, IDF.get(shingleIndex));
+                } else {
+                    shinglesWithTFIDF.put(shingleIndex, shinglesWithTFIDF.get(shingleIndex) + IDF.get(shingleIndex));
+                }
+            }
+        }
+
+        List<Map.Entry<Integer, Double>> entries = new ArrayList<>(shinglesWithTFIDF.entrySet());
+        entries.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+        boolean[] setOfShingles = new boolean[shingleIDs.size()];
+        for (int i = 0; i < percentage * entries.size() / 100; ++i) {
+            Integer ID = entries.get(i).getKey();
+            setOfShingles[ID] = true;
+        }
+
+        return setOfShingles;
     }
 
     public static Map<Integer, int[]> createMultisetsOfStridedShingles(Map<Integer, List<Integer>> data, int shingleSize) {
         Map<Integer, int[]> multisetsOfStridedShingles = new HashMap<>();
         for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
             List<List<Integer>> sequences = convertToSequencesWithStride(entry.getValue(), 5);
-            int[] multiset = Shingles.createMultisetOfStridedShingles(sequences, shingleSize);
+            int[] multiset = ShingleUtility.createMultisetOfStridedShingles(sequences, shingleSize);
             multisetsOfStridedShingles.put(entry.getKey(), multiset);
         }
         return multisetsOfStridedShingles;
@@ -205,7 +210,7 @@ public class Shingles {
         Map<Integer, boolean[]> setsOfStridedShingles = new HashMap<>();
         for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
             List<List<Integer>> sequences = convertToSequencesWithStride(entry.getValue(), 5);
-            boolean[] set = Shingles.createSetOfStridedShingles(sequences, shingleSize);
+            boolean[] set = ShingleUtility.createSetOfStridedShingles(sequences, shingleSize);
             setsOfStridedShingles.put(entry.getKey(), set);
         }
         return setsOfStridedShingles;
@@ -218,7 +223,7 @@ public class Shingles {
      * @return array of int where
      * (output[i] = k) means the shingle with index i appeared in the input list k times
      */
-    public static int[] createMultisetOfShingles(List<Integer> list, int shingleSize) {
+    private static int[] createMultisetOfShingles(List<Integer> list, int shingleSize) {
         int[] shingles = new int[shingleIDs.size()];
 
         for (int i = 0; i < list.size() - shingleSize + 1; ++i) {
@@ -250,7 +255,7 @@ public class Shingles {
      * @return array of booleans where
      * (output[i] = true) means the shingle with index i appeared somewhere in the input
      */
-    public static boolean[] createSetOfShingles(List<Integer> list, int minK, int maxK) {
+    private static boolean[] createSetOfShingles(List<Integer> list, int minK, int maxK) {
         boolean[] shingles = new boolean[shingleIDs.size()];
 
         for (int K = minK; K <= maxK; ++K) {
@@ -262,7 +267,7 @@ public class Shingles {
         return shingles;
     }
 
-    public static boolean[] createSetOfStridedShingles(List<List<Integer>> sequences, int shingleSize) {
+    private static boolean[] createSetOfStridedShingles(List<List<Integer>> sequences, int shingleSize) {
         boolean[] shingles = new boolean[shingleIDs.size()];
 
         for (List<Integer> sequence : sequences) {
