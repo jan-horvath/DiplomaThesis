@@ -1,6 +1,6 @@
 package cz.muni.fi.thesis.shingling.evaluation;
 
-import cz.muni.fi.thesis.shingling.Jaccard;
+import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ public class ThresholdKNN {
         for (Map.Entry<Integer, int[]> entry : data_KNN.entrySet()) {
             Integer recordID = entry.getKey();
             for (int otherRecordID : entry.getValue()) {
-                double weighedJaccard = Jaccard.computeJaccard(GTShingles.get(recordID), GTShingles.get(otherRecordID));
+                double weighedJaccard = JaccardSimilarity.computeJaccard(GTShingles.get(recordID), GTShingles.get(otherRecordID));
                 if (weighedJaccard > threshold) {
                     result += 1.0;
                 }

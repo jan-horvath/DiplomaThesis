@@ -3,6 +3,7 @@ package cz.muni.fi.thesis.shingling;
 import com.google.common.collect.BiMap;
 import cz.muni.fi.thesis.shingling.evaluation.KNN;
 import cz.muni.fi.thesis.shingling.evaluation.ThresholdKNN;
+import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -50,7 +51,7 @@ public class Main {
         for (Map.Entry<Integer, int[]> entry : data_KNN.entrySet()) {
             Integer recordID = entry.getKey();
             for (int otherRecordID : entry.getValue()) {
-                double weighedJaccard = Jaccard.computeJaccard(GTShingles.get(recordID), GTShingles.get(otherRecordID));
+                double weighedJaccard = JaccardSimilarity.computeJaccard(GTShingles.get(recordID), GTShingles.get(otherRecordID));
                 if (weighedJaccard > threshold) {
                     result += 1.0;
                 }
@@ -126,7 +127,7 @@ public class Main {
             for (int ID : entry.getValue()) {
                 boolean[] set1 = dataShingles.get(entry.getKey());
                 boolean[] set2 = dataShingles.get(ID);
-                double wJaccard = Jaccard.computeWeighedJaccard(set1, set2, ShingleUtility.getIDF());
+                double wJaccard = JaccardSimilarity.computeWeighedJaccard(set1, set2, ShingleUtility.getIDF());
                 jaccardEntries.add(new SimilarityMatrix.JaccardEntry(ID, wJaccard));
             }
         }
@@ -266,10 +267,10 @@ public class Main {
         Shingles.computeInverseDocumentFrequencyForShingles(data, minK, maxK);
         Map<Integer, boolean[]> dataShingles = Shingles.createSetsOfShingles(data, minK, maxK);
         SimilarityMatrix.createMatrixFromSets(dataShingles, true);
-        System.out.println(Jaccard.oneShingleInfluenceAverage);
-        System.out.println(Jaccard.nonEmptyIntersections);
-        System.out.println(Jaccard.oneShingleInfluenceAverage/Jaccard.nonEmptyIntersections);
-        System.out.println(Jaccard.oneShingleInfluenceAverage/58081);*/
+        System.out.println(JaccardSimilarity.oneShingleInfluenceAverage);
+        System.out.println(JaccardSimilarity.nonEmptyIntersections);
+        System.out.println(JaccardSimilarity.oneShingleInfluenceAverage/JaccardSimilarity.nonEmptyIntersections);
+        System.out.println(JaccardSimilarity.oneShingleInfluenceAverage/58081);*/
 
         // #3 - Threshold KNN
         DecimalFormat df3 = new DecimalFormat("#.##");

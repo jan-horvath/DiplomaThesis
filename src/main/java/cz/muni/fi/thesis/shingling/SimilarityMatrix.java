@@ -1,5 +1,7 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
+
 import java.util.*;
 
 public class SimilarityMatrix {
@@ -57,9 +59,9 @@ public class SimilarityMatrix {
             for (Map.Entry<Integer, boolean[]> entry2 : data.entrySet()) {
                 double jaccardValue;
                 if (weightedJaccard) {
-                    jaccardValue = Jaccard.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), ShingleUtility.getIDF());
+                    jaccardValue = JaccardSimilarity.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), ShingleUtility.getIDF());
                 } else {
-                    jaccardValue = Jaccard.computeJaccard(entry1.getValue(), entry2.getValue());
+                    jaccardValue = JaccardSimilarity.computeJaccard(entry1.getValue(), entry2.getValue());
                 }
                 jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
             }
@@ -79,7 +81,7 @@ public class SimilarityMatrix {
             List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
-                double jaccardValue = Jaccard.computeJaccardOnMinhashes(entry1.getValue(), entry2.getValue());
+                double jaccardValue = JaccardSimilarity.computeJaccardOnMinhashes(entry1.getValue(), entry2.getValue());
                 jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
             }
         }
@@ -94,7 +96,7 @@ public class SimilarityMatrix {
             List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
-                double jaccardValue = Jaccard.computeJaccardOnMultisets(entry1.getValue(), entry2.getValue());
+                double jaccardValue = JaccardSimilarity.computeJaccardOnMultisets(entry1.getValue(), entry2.getValue());
                 jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
             }
         }

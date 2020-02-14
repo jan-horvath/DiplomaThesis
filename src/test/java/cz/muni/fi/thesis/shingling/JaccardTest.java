@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
 import org.assertj.core.data.Offset;
 import org.assertj.core.data.Percentage;
 import org.junit.*;
@@ -12,7 +13,7 @@ public class JaccardTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    //Jaccard on sets
+    //JaccardSimilarity on sets
     private boolean[] buildSetFiveTrues() {
         return new boolean[]{true, true, true, true, true};
     }
@@ -39,42 +40,42 @@ public class JaccardTest {
         boolean[] set2 = buildSmallerSet();
 
         expectedException.expect(IllegalArgumentException.class);
-        Jaccard.computeJaccard(set1, set2);
+        JaccardSimilarity.computeJaccard(set1, set2);
     }
 
     @Test
     public void computeJaccardOnSameSetsTest() {
         boolean[] set1 = buildSetFiveTrues();
         boolean[] set2 = buildSetFiveTrues();
-        assertThat(Jaccard.computeJaccard(set1, set2)).isCloseTo(1.0, Percentage.withPercentage(0.1));
+        assertThat(JaccardSimilarity.computeJaccard(set1, set2)).isCloseTo(1.0, Percentage.withPercentage(0.1));
 
         set1 = buildSetFTFTF();
         set2 = buildSetFTFTF();
-        assertThat(Jaccard.computeJaccard(set1, set2)).isCloseTo(1.0, Percentage.withPercentage(0.1));
+        assertThat(JaccardSimilarity.computeJaccard(set1, set2)).isCloseTo(1.0, Percentage.withPercentage(0.1));
     }
 
     @Test
     public void computeJaccardOnComplementarySetsTest() {
         boolean[] set1 = buildSetFTFTF();
         boolean[] set2 = buildSetTFTFT();
-        assertThat(Jaccard.computeJaccard(set1, set2)).isCloseTo(0.0, Offset.offset(0.001));
+        assertThat(JaccardSimilarity.computeJaccard(set1, set2)).isCloseTo(0.0, Offset.offset(0.001));
     }
 
     @Test
     public void computeJaccardOnProperSubsetTest() {
         boolean[] set1 = buildSetFiveTrues();
         boolean[] set2 = buildSetTFTFT();
-        assertThat(Jaccard.computeJaccard(set1, set2)).isCloseTo(0.6, Offset.offset(0.001));
+        assertThat(JaccardSimilarity.computeJaccard(set1, set2)).isCloseTo(0.6, Offset.offset(0.001));
     }
 
     @Test
     public void computeJaccardOnIntersectingSetsTest() {
         boolean[] set1 = buildSetTTTFF();
         boolean[] set2 = buildSetTFTFT();
-        assertThat(Jaccard.computeJaccard(set1, set2)).isCloseTo(0.5, Offset.offset(0.001));
+        assertThat(JaccardSimilarity.computeJaccard(set1, set2)).isCloseTo(0.5, Offset.offset(0.001));
     }
 
-    //Jaccard on minhashes
+    //JaccardSimilarity on minhashes
     private int[] buildMinhash11111() {
         return new int[]{1,1,1,1,1};
     }
@@ -97,31 +98,31 @@ public class JaccardTest {
         int[] minhash2 = buildSmallerMinhash();
 
         expectedException.expect(IllegalArgumentException.class);
-        Jaccard.computeJaccardOnMinhashes(minhash1, minhash2);
+        JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2);
     }
 
     @Test
     public void computeJaccardOnEqualMinhashesTest() {
         int[] minhash1 = buildMinhash11111();
         int[] minhash2 = buildMinhash11111();
-        assertThat(Jaccard.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(1.0, Offset.offset(0.001));
+        assertThat(JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(1.0, Offset.offset(0.001));
     }
 
     @Test
     public void computeJaccardOnSimilarMinhashesTest() {
         int[] minhash1 = buildMinhash11111();
         int[] minhash2 = buildMinhash01210();
-        assertThat(Jaccard.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(0.4, Offset.offset(0.001));
+        assertThat(JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(0.4, Offset.offset(0.001));
     }
 
     @Test
     public void computeJaccardOnNonSimilarMinhashesTest() {
         int[] minhash1 = buildMinhash11111();
         int[] minhash2 = buildMinhash22222();
-        assertThat(Jaccard.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(0.0, Offset.offset(0.001));
+        assertThat(JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(0.0, Offset.offset(0.001));
     }
 
-    //Jaccard on multisets
+    //JaccardSimilarity on multisets
     private int[] buildMultiset01234() {
         return new int[]{0,1,2,3,4};
     }
@@ -144,27 +145,27 @@ public class JaccardTest {
         int[] multiset2 = buildSmallerMultiset();
 
         expectedException.expect(IllegalArgumentException.class);
-        Jaccard.computeJaccardOnMultisets(multiset1, multiset2);
+        JaccardSimilarity.computeJaccardOnMultisets(multiset1, multiset2);
     }
 
     @Test
     public void computeJaccardOnTheSameMultisetsTest() {
         int[] multiset1 = buildMultiset01234();
         int[] multiset2 = buildMultiset01234();
-        assertThat(Jaccard.computeJaccardOnMultisets(multiset1, multiset2)).isCloseTo(0.5, Offset.offset(0.0001));
+        assertThat(JaccardSimilarity.computeJaccardOnMultisets(multiset1, multiset2)).isCloseTo(0.5, Offset.offset(0.0001));
     }
 
     @Test
     public void computeJaccardOnOverlappingMultisets() {
         int[] multiset1 = buildMultiset01234();
         int[] multiset2 = buildMultiset43210();
-        assertThat(Jaccard.computeJaccardOnMultisets(multiset1, multiset2)).isCloseTo(0.2, Offset.offset(0.0001));
+        assertThat(JaccardSimilarity.computeJaccardOnMultisets(multiset1, multiset2)).isCloseTo(0.2, Offset.offset(0.0001));
     }
 
     @Test
     public void computeJaccardOnNonOverlappingMultisets() {
         int[] multiset1 = buildMultiset01234();
         int[] multiset2 = buildMultiset50000();
-        assertThat(Jaccard.computeJaccardOnMultisets(multiset1, multiset2)).isCloseTo(0.0, Offset.offset(0.0001));
+        assertThat(JaccardSimilarity.computeJaccardOnMultisets(multiset1, multiset2)).isCloseTo(0.0, Offset.offset(0.0001));
     }
 }
