@@ -21,4 +21,6 @@ public class ThresholdKNN {
         }
         return result/(K_in_KNN * GTShingles.size());
     }
+
+    //public static double evaluate(List<>)
 }

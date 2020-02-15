@@ -6,9 +6,9 @@ import java.util.*;
 
 public class KNN {
 
-    private static int getNumberOfEntriesWithValueAtLeastN(List<SimilarityMatrix.JaccardEntry> entries, double n) {
+    private static int getNumberOfEntriesWithValueAtLeastN(List<SimilarityMatrix.SimilarityEntry> entries, double n) {
         int count = 0;
-        for (SimilarityMatrix.JaccardEntry entry : entries) {
+        for (SimilarityMatrix.SimilarityEntry entry : entries) {
             if (entry.jaccardValue > n - 0.001) {
                 ++count;
             }
@@ -21,7 +21,7 @@ public class KNN {
 
     public static Map<Integer, Integer> getNumberOfEntriesWithValueAtLeastNForEachRow(SimilarityMatrix matrix, double n) {
         Map<Integer, Integer> map = new HashMap<>();
-        for (Map.Entry<Integer, List<SimilarityMatrix.JaccardEntry>> entry : matrix.getMatrix().entrySet()) {
+        for (Map.Entry<Integer, List<SimilarityMatrix.SimilarityEntry>> entry : matrix.getMatrix().entrySet()) {
             map.put(entry.getKey(), getNumberOfEntriesWithValueAtLeastN(entry.getValue(), n));
         }
         return map;
@@ -30,13 +30,13 @@ public class KNN {
     public static Map<Integer, int[]> bulkExtractVariableKNNIndices(SimilarityMatrix matrix, Map<Integer, Integer> variableK) {
         Map<Integer, int[]> result = new HashMap<>();
 
-        for (Map.Entry<Integer, List<SimilarityMatrix.JaccardEntry>> e : matrix.getMatrix().entrySet()) {
+        for (Map.Entry<Integer, List<SimilarityMatrix.SimilarityEntry>> e : matrix.getMatrix().entrySet()) {
             result.put(e.getKey(), extractKNNIndices(e.getValue(), variableK.get(e.getKey())-1, e.getKey()));
         }
         return result;
     }
 
-    private static int[] extractKNNIndices(List<SimilarityMatrix.JaccardEntry> entries, int k, int skipIndex) {
+    private static int[] extractKNNIndices(List<SimilarityMatrix.SimilarityEntry> entries, int k, int skipIndex) {
 
         entries.removeIf(e -> e.recordID == skipIndex);
         Collections.sort(entries);
@@ -53,7 +53,7 @@ public class KNN {
     public static Map<Integer, int[]> bulkExtractKNNIndices(SimilarityMatrix matrix, int k) {
         Map<Integer, int[]> result = new HashMap<>();
 
-        for (Map.Entry<Integer, List<SimilarityMatrix.JaccardEntry>> entry : matrix.getMatrix().entrySet()) {
+        for (Map.Entry<Integer, List<SimilarityMatrix.SimilarityEntry>> entry : matrix.getMatrix().entrySet()) {
             result.put(entry.getKey(), extractKNNIndices(entry.getValue(), k, entry.getKey()));
         }
         return result;

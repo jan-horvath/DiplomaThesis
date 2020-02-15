@@ -2,11 +2,9 @@ package cz.muni.fi.thesis.shingling;
 
 import com.google.common.collect.BiMap;
 import cz.muni.fi.thesis.shingling.evaluation.KNN;
-import cz.muni.fi.thesis.shingling.evaluation.ThresholdKNN;
 import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
 
 import java.io.*;
-import java.text.DecimalFormat;
 import java.util.*;
 
 
@@ -123,18 +121,36 @@ public class Main {
         SimilarityMatrix filtered_matrix = new SimilarityMatrix();
         for (Map.Entry<Integer, int[]> entry : filtered_data.entrySet()) {
             filtered_matrix.getMatrix().put(entry.getKey(), new ArrayList<>());
-            List<SimilarityMatrix.JaccardEntry> jaccardEntries = filtered_matrix.getMatrix().get(entry.getKey());
+            List<SimilarityMatrix.SimilarityEntry> jaccardEntries = filtered_matrix.getMatrix().get(entry.getKey());
             for (int ID : entry.getValue()) {
                 boolean[] set1 = dataShingles.get(entry.getKey());
                 boolean[] set2 = dataShingles.get(ID);
                 double wJaccard = JaccardSimilarity.computeWeighedJaccard(set1, set2, ShingleUtility.getIDF());
-                jaccardEntries.add(new SimilarityMatrix.JaccardEntry(ID, wJaccard));
+                jaccardEntries.add(new SimilarityMatrix.SimilarityEntry(ID, wJaccard));
             }
         }
         return filtered_matrix;
     }
 
     public static void main(String[] args) throws IOException {
+
+        Map<Integer, List<Integer>> groundTruth = DataLoader.parseGroundTruthFile(groundTruthFile);
+        Map<Integer, List<Integer>> data = DataLoader.parseDataFile(dataFile);
+
+        Sequence.setUp(data, 1,1,22, 152);
+        List<Sequence> sequences = new ArrayList<>();
+        for (Integer id : data.keySet()) {
+            sequences.add(new Sequence(id, groundTruth.get(id), data.get(id)));
+        }
+
+        SimilarityMatrix gtMatrix = SimilarityMatrix.createMatrix(sequences, SimilarityMatrix.MatrixType.GTSet);
+        SimilarityMatrix dataMatrix = SimilarityMatrix.createMatrix(sequences, SimilarityMatrix.MatrixType.Set);
+
+        Map<Integer, int[]> GT_KNN = KNN.bulkExtractKNNIndices(gtMatrix, 12);
+        Map<Integer, int[]> data_KNN = KNN.bulkExtractKNNIndices(dataMatrix, 12);
+
+        System.out.println(KNN.bulkEvaluateKNN(GT_KNN, data_KNN));
+
 
         //KNN with prior filtering
         /*for (int K = 2; K <= 18; K+=2) {
@@ -228,12 +244,12 @@ public class Main {
                 fw.write("sumOfWeights=" + df2.format(shinglesWeights) + "\n");
             }
 
-            List<SimilarityMatrix.JaccardEntry> similarityDistances = dataMatrix.getMatrix().get(sequenceID);
-            List<SimilarityMatrix.JaccardEntry> GTSimilarityDistances = GTMatrix.getMatrix().get(sequenceID);
+            List<SimilarityMatrix.SimilarityEntry> similarityDistances = dataMatrix.getMatrix().get(sequenceID);
+            List<SimilarityMatrix.SimilarityEntry> GTSimilarityDistances = GTMatrix.getMatrix().get(sequenceID);
 
             for (int N = 1; N <= NEAREST;  ++N) {
-                SimilarityMatrix.JaccardEntry nearest = similarityDistances.get(N-1);
-                SimilarityMatrix.JaccardEntry GTNearest = GTSimilarityDistances.stream()
+                SimilarityMatrix.SimilarityEntry nearest = similarityDistances.get(N-1);
+                SimilarityMatrix.SimilarityEntry GTNearest = GTSimilarityDistances.stream()
                         .filter(jEntry -> jEntry.recordID == nearest.recordID)
                         .findFirst().orElse(null);
 
@@ -273,7 +289,7 @@ public class Main {
         System.out.println(JaccardSimilarity.oneShingleInfluenceAverage/58081);*/
 
         // #3 - Threshold KNN
-        DecimalFormat df3 = new DecimalFormat("#.##");
+        /*DecimalFormat df3 = new DecimalFormat("#.##");
         for (int topXpercent = 10; topXpercent <= 100; topXpercent += 10) {
             System.out.println("\nX = " + topXpercent);
             for (int K = 1; K <= 15; ++K) {
@@ -293,7 +309,7 @@ public class Main {
 
                 System.out.println(df3.format(100*ThresholdKNN.evaluate(GTShingles, data_KNN, 0.0)));
             }
-        }
+        }*/
 
         // #2 - weighed jaccard
         /*for (int i = 4; i <= 18; i+=2) {
@@ -333,7 +349,7 @@ public class Main {
                 Map<Integer, int[]> filtered_matrix = KNN.bulkExtractKNNIndices(dataMatrix, i);
                 System.out.println(i + "-NN: " + KNN.bulkEvaluateKNN(GT_KNN, filtered_matrix));
             }
-        }
+        }*/
 
         // #1
         /*

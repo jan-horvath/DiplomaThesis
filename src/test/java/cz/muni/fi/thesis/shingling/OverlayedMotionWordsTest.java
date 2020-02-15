@@ -1,15 +1,11 @@
 package cz.muni.fi.thesis.shingling;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +19,7 @@ public class OverlayedMotionWordsTest {
         return Math.abs(x - y) < 0.001;
     }
 
-    private boolean containsJaccardEntry(List<SimilarityMatrix.JaccardEntry> list, int recordId, double jaccardValue){
+    private boolean containsJaccardEntry(List<SimilarityMatrix.SimilarityEntry> list, int recordId, double jaccardValue){
         return list.stream().anyMatch(o -> (o.recordID == recordId) && (areClose(jaccardValue, o.jaccardValue)));
     }
 

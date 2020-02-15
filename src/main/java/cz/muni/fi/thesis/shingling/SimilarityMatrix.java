@@ -1,17 +1,19 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.CosineSimilarity;
 import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
 
 import java.util.*;
 
 public class SimilarityMatrix {
-    private Map<Integer, List<JaccardEntry>> matrix = new HashMap<>();
+    //Maybe change to Map<Integer, Map<Integer, SimilarityEntry>>
+    private Map<Integer, List<SimilarityEntry>> matrix = new HashMap<>();
 
-    public static class JaccardEntry implements Comparable<JaccardEntry> {
+    public static class SimilarityEntry implements Comparable<SimilarityEntry> {
         public final int recordID;
         public final double jaccardValue;
 
-        public JaccardEntry(int recordID, double jaccardValue) {
+        public SimilarityEntry(int recordID, double jaccardValue) {
             this.recordID = recordID;
             this.jaccardValue = jaccardValue;
         }
@@ -20,7 +22,7 @@ public class SimilarityMatrix {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            JaccardEntry entry = (JaccardEntry) o;
+            SimilarityEntry entry = (SimilarityEntry) o;
             return Double.compare(entry.jaccardValue, jaccardValue) == 0;
         }
 
@@ -30,7 +32,7 @@ public class SimilarityMatrix {
         }
 
         @Override
-        public int compareTo(JaccardEntry o) {
+        public int compareTo(SimilarityEntry o) {
             return Double.compare(jaccardValue, o.jaccardValue);
         }
 
@@ -54,7 +56,7 @@ public class SimilarityMatrix {
 
         for (Map.Entry<Integer, boolean[]> entry1 : data.entrySet()) {
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             for (Map.Entry<Integer, boolean[]> entry2 : data.entrySet()) {
                 double jaccardValue;
@@ -63,7 +65,7 @@ public class SimilarityMatrix {
                 } else {
                     jaccardValue = JaccardSimilarity.computeJaccard(entry1.getValue(), entry2.getValue());
                 }
-                jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
+                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
             }
         }
         return similarityMatrix;
@@ -78,11 +80,11 @@ public class SimilarityMatrix {
 
         for (Map.Entry<Integer, int[]> entry1 : data.entrySet()) {
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
                 double jaccardValue = JaccardSimilarity.computeJaccardOnMinhashes(entry1.getValue(), entry2.getValue());
-                jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
+                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
             }
         }
         return similarityMatrix;
@@ -93,11 +95,11 @@ public class SimilarityMatrix {
 
         for (Map.Entry<Integer, int[]> entry1 : data.entrySet()) {
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
                 double jaccardValue = JaccardSimilarity.computeJaccardOnMultisets(entry1.getValue(), entry2.getValue());
-                jaccardEntries.add(new JaccardEntry(entry2.getKey(), jaccardValue));
+                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
             }
         }
         return similarityMatrix;
@@ -108,24 +110,24 @@ public class SimilarityMatrix {
 
         for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<JaccardEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             if (isSet) {
                 for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
                     double value = setSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+                    jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
                 }
             } else {
                 for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
                     double value = multisetSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                    jaccardEntries.add(new JaccardEntry(entry2.getKey(), value));
+                    jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
                 }
             }
         }
         return similarityMatrix;
     }
 
-    public Map<Integer, List<JaccardEntry>> getMatrix() {
+    public Map<Integer, List<SimilarityEntry>> getMatrix() {
         return matrix;
     }
 
@@ -175,13 +177,51 @@ public class SimilarityMatrix {
         return ((double) matchCount)/(rec1.size() + rec2.size() - matchCount);
     }
 
+    public enum MatrixType{GTSet, GTMultiset, TFIDF_TF, TFIDF_TFIDF, Set}
+
+    public static SimilarityMatrix createMatrix(List<Sequence> sequences, MatrixType type) {
+        SimilarityMatrix sm = new SimilarityMatrix();
+        for (Sequence query : sequences) {
+            sm.matrix.put(query.getId(), new ArrayList<>());
+            List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
+            for (Sequence compareSequence : sequences) {
+                double similarity;
+                switch (type) {
+                    case GTSet:  {
+                        similarity = JaccardSimilarity.computeJaccard(query.getGroundTruthSet(), compareSequence.getGroundTruthSet());
+                        break;
+                    }
+                    case GTMultiset: {
+                        similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(), compareSequence.toMultiset());
+                        break;
+                    }
+                    case TFIDF_TFIDF: {
+                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(), compareSequence.toTfIdfWeights());
+                        break;
+                    }
+                    case TFIDF_TF: {
+                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(), compareSequence.toTfWeights());
+                        break;
+                    }
+                    case Set: {
+                        similarity = JaccardSimilarity.computeJaccard(query.toSet(), compareSequence.toSet());
+                        break;
+                    }
+                    default: throw new IllegalStateException("This matrix type is not yet implemented!");
+                }
+                similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
+            }
+        }
+        return sm;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Integer, List<JaccardEntry>> entry : matrix.entrySet()) {
+        for (Map.Entry<Integer, List<SimilarityEntry>> entry : matrix.entrySet()) {
             sb.append(entry.getKey()).append(": ");
-            for (JaccardEntry jaccardEntry : entry.getValue()) {
-                sb.append(jaccardEntry.toString()).append(", ");
+            for (SimilarityEntry similarityEntry : entry.getValue()) {
+                sb.append(similarityEntry.toString()).append(", ");
             }
             sb.append("\n");
         }
