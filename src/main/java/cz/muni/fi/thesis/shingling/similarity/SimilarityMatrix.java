@@ -1,7 +1,7 @@
-package cz.muni.fi.thesis.shingling;
+package cz.muni.fi.thesis.shingling.similarity;
 
-import cz.muni.fi.thesis.shingling.similarity.CosineSimilarity;
-import cz.muni.fi.thesis.shingling.similarity.JaccardSimilarity;
+import cz.muni.fi.thesis.shingling.Sequence;
+import cz.muni.fi.thesis.shingling.ShingleUtility;
 
 import java.util.*;
 
@@ -105,22 +105,34 @@ public class SimilarityMatrix {
         return similarityMatrix;
     }
 
-    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, boolean isSet) {
+    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, int overlayJaccardNumber) {
         SimilarityMatrix similarityMatrix = new SimilarityMatrix();
 
         for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
             similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
             List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
-            if (isSet) {
-                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                    double value = setSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                    jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+            switch (overlayJaccardNumber) {
+                case OverlayJaccardSimilarity.SET_EQUIVALENT : {
+                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                        double value = OverlayJaccardSimilarity.overlayJaccard1(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+                    }
+                    break;
                 }
-            } else {
-                for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                    double value = multisetSimilarityOfOverlayedRecordings(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                    jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+                case OverlayJaccardSimilarity.COUNT_EACH_ONCE : {
+                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                        double value = OverlayJaccardSimilarity.overlayJaccard3(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+                    }
+                    break;
+                }
+                case OverlayJaccardSimilarity.MULTISET_EQUIVALENT : {
+                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+                        double value = OverlayJaccardSimilarity.overlayJaccard2(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+                    }
+                    break;
                 }
             }
         }
@@ -131,53 +143,7 @@ public class SimilarityMatrix {
         return matrix;
     }
 
-    private static boolean overlayMotionWordsMatch(int[] mw1, int[] mw2, int matchingsRequired) {
-        assert(mw1.length == mw2.length);
-        int matchingsFound = 0;
-        for (int i = 0; i < mw1.length; ++i) {
-            if (mw1[i] == mw2[i]) {
-                ++matchingsFound;
-            }
-        }
-        return matchingsFound >= matchingsRequired;
-    }
 
-    private static double multisetSimilarityOfOverlayedRecordings(List<int[]> rec1, List<int[]> rec2, int matchingsRequired) {
-        int matchCount = 0;
-        for (int[] mw1 : rec1) {
-            for (int[] mw2 : rec2) {
-                if (overlayMotionWordsMatch(mw1, mw2, matchingsRequired)) {
-                    ++matchCount;
-                }
-            }
-        }
-        return ((double) matchCount)/(rec1.size() * rec2.size());
-    }
-
-    private static double setSimilarityOfOverlayedRecordings(List<int[]> rec1, List<int[]> rec2, int matchingsRequired) {
-        boolean matchFound = false;
-        int matchCount = 0;
-
-        if (rec1.size() > rec2.size()) {
-            List<int[]> tmp = rec1;
-            rec1 = rec2;
-            rec2 = tmp;
-        }
-
-        for (int[] mw1 : rec1) {
-            for (int[] mw2 : rec2) {
-                if (overlayMotionWordsMatch(mw1, mw2, matchingsRequired)) {
-                    matchFound = true;
-                    break;
-                }
-            }
-            if (matchFound) {++matchCount;}
-            matchFound = false;
-        }
-        return ((double) matchCount)/(rec1.size() + rec2.size() - matchCount);
-    }
-
-    public enum MatrixType{GTSet, GTMultiset, TFIDF_TF, TFIDF_TFIDF, Set}
 
     public static SimilarityMatrix createMatrix(List<Sequence> sequences, MatrixType type) {
         SimilarityMatrix sm = new SimilarityMatrix();
@@ -186,25 +152,54 @@ public class SimilarityMatrix {
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
             for (Sequence compareSequence : sequences) {
                 double similarity;
-                switch (type) {
-                    case GTSet:  {
-                        similarity = JaccardSimilarity.computeJaccard(query.getGroundTruthSet(), compareSequence.getGroundTruthSet());
+                switch (type) { //make this switch into a private function
+                    case SET: {
+                        similarity = JaccardSimilarity.computeJaccard(query.toSet(false), compareSequence.toSet(false));
                         break;
                     }
-                    case GTMultiset: {
-                        similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(), compareSequence.toMultiset());
+                    case SET_IGNORE: {
+                        similarity = JaccardSimilarity.computeJaccard(query.toSet(true), compareSequence.toSet(true));
+                        break;
+                    }
+                    case MULTISET: {
+                        similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(false), compareSequence.toMultiset(false));
+                        break;
+                    }
+                    case MULTISET_IGNORE: {
+                        similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(true), compareSequence.toMultiset(true));
+                        break;
+                    }
+                    case IDF: {
+                        similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(false), compareSequence.toSet(false), Sequence.getIdf());
+                        break;
+                    }
+                    case IDF_IGNORE: {
+                        similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(true), compareSequence.toSet(true), Sequence.getIdf());
                         break;
                     }
                     case TFIDF_TFIDF: {
-                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(), compareSequence.toTfIdfWeights());
+                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(false), compareSequence.toTfIdfWeights(false));
                         break;
                     }
-                    case TFIDF_TF: {
-                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(), compareSequence.toTfWeights());
+                    case TFIDF_TFIDF_IGNORE: {
+                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfIdfWeights(true));
                         break;
                     }
-                    case Set: {
-                        similarity = JaccardSimilarity.computeJaccard(query.toSet(), compareSequence.toSet());
+                    case TFIDF_TF_IGNORE: {
+                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfWeights(true));
+                        break;
+                    }
+                    case INTERSECTION: {
+                        similarity = IntersectionSimilarity.computeSimilarityNoWeights(query.toSet(false), compareSequence.toSet(false));
+                        break;
+                    } case INTERSECTION_IGNORE: {
+                        similarity = IntersectionSimilarity.computeSimilarityNoWeights(query.toSet(true), compareSequence.toSet(true));
+                        break;
+                    } case INTERSECTION_IDF: {
+                        similarity = IntersectionSimilarity.computeSimilarityIdfWeights(query.toSet(false), compareSequence.toSet(false));
+                        break;
+                    } case INTERSECTION_IDF_IGNORE: {
+                        similarity = IntersectionSimilarity.computeSimilarityIdfWeights(query.toSet(true), compareSequence.toSet(true));
                         break;
                     }
                     default: throw new IllegalStateException("This matrix type is not yet implemented!");

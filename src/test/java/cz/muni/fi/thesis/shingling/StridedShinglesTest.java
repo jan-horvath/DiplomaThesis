@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 import org.junit.Before;
 import org.junit.Test;
 

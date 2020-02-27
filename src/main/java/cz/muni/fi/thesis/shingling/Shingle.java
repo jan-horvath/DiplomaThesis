@@ -30,4 +30,9 @@ public final class Shingle {
     public int hashCode() {
         return Objects.hash(shingle);
     }
+
+    @Override
+    public String toString() {
+        return shingle.toString();
+    }
 }

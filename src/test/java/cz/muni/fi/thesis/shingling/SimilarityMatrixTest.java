@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;

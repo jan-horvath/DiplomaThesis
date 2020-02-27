@@ -1,6 +1,6 @@
 package cz.muni.fi.thesis.shingling.evaluation;
 
-import cz.muni.fi.thesis.shingling.SimilarityMatrix;
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 
 import java.util.*;
 
@@ -59,7 +59,7 @@ public class KNN {
         return result;
     }
 
-    private static double evaluateKNN(int[] groundTruth, int[] data) {
+    private static double evaluateKnnOnSequence(int[] groundTruth, int[] data) {
         assert(groundTruth.length == data.length);
         
         int k = groundTruth.length;
@@ -76,14 +76,14 @@ public class KNN {
         return ((double)matching)/k;
     }
 
-    public static double bulkEvaluateKNN(Map<Integer, int[]> groundTruth,  Map<Integer, int[]> data) {
+    public static double evaluateKnn(Map<Integer, int[]> groundTruth, Map<Integer, int[]> data) {
         double average = 0.0;
         int recordingCount = 0;
 
         for (Integer recordingIndex : groundTruth.keySet()) {
             assert(data.containsKey(recordingIndex));
             if (groundTruth.get(recordingIndex).length != 0) {
-                double average1 = evaluateKNN(groundTruth.get(recordingIndex), data.get(recordingIndex));
+                double average1 = evaluateKnnOnSequence(groundTruth.get(recordingIndex), data.get(recordingIndex));
                 average += average1;
                 ++recordingCount;
             }

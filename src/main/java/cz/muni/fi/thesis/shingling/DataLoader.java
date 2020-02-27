@@ -1,9 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,6 +137,25 @@ public class DataLoader {
                 motions.put(sequenceId, motionWords);
             }
         }
+        return motions;
+    }
+
+    static public Map<Integer, String> parseScenarioFile(String filename) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
+        Map<Integer, String> motions = new HashMap<>();
+
+        String line = bufferedReader.readLine();
+        assert(line.equals("seqId;HDM_seqId"));
+
+        Pattern sequenceIdPattern = Pattern.compile("(\\d+?);");
+        Pattern scenarioPattern = Pattern.compile("(\\d\\d-\\d\\d)");
+
+        while ((line = bufferedReader.readLine()) != null) {
+            Integer sequenceId = Integer.parseInt(matchFirstRegex(sequenceIdPattern, line));
+            String scenario = matchFirstRegex(scenarioPattern, line);
+            motions.put(sequenceId, scenario);
+        }
+
         return motions;
     }
 }

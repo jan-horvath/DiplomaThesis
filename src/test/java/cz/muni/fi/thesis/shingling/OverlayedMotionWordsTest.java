@@ -1,5 +1,8 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.OverlayJaccardSimilarity;
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
+import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -82,14 +85,22 @@ public class OverlayedMotionWordsTest {
         parsedData.put(2, Arrays.asList(new int[]{0,1,4,9,16}, new int[]{6,6,6,6,6}, new int[]{100,200,300,400,500}));
         parsedData.put(3, Arrays.asList(new int[]{0,5,4,5,5}, new int[]{5,5,5,5,5}));
 
-        SimilarityMatrix oneOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 1, false);
+        SimilarityMatrix oneOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 1, OverlayJaccardSimilarity.MULTISET_EQUIVALENT);
         assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 2, 1.0/3)).isTrue();
         assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 3, 1.0/2)).isTrue();
         assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
 
-        SimilarityMatrix twoOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 2, false);
+        SimilarityMatrix twoOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 2, OverlayJaccardSimilarity.MULTISET_EQUIVALENT);
         assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 2, 1.0/6)).isTrue();
         assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 3, 0.0)).isTrue();
         assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
+    }
+
+    @Test
+    public void countEachOnce_overlayJaccardTest() {
+        List<int[]> rec1 = Arrays.asList(new int[]{0, 1, 2, 3, 4}, new int[]{0, 5, 20, 30, 40}, new int[]{9, 9, 9, 9, 9});
+        List<int[]> rec2 = Arrays.asList(new int[]{0, 1, 5, 5, 5}, new int[]{0, 5, 5, 5, 4});
+        double value = OverlayJaccardSimilarity.overlayJaccard2(rec1, rec2, 2);
+        assertThat(value).isCloseTo(0.8, Offset.offset(0.0001));
     }
 }
