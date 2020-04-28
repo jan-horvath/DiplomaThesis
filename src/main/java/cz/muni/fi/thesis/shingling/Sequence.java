@@ -22,6 +22,7 @@ public class Sequence {
 
     private final int id;
     private final String scenario;
+    private final List<Integer> sequence;
     private Map<Integer, Integer> term_frequency;
 
     public int getId() {
@@ -74,7 +75,8 @@ public class Sequence {
     private static void computeIdf(Map<Integer, List<Integer>> data, int minK, int maxK) {
         idf = new HashMap<>();
         Map<Shingle, Integer> shingleOccurrences = new HashMap<>();
-        for (List<Integer> sequence : data.values()) {
+        for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
+            List<Integer> sequence = entry.getValue();
             Set<Shingle> shinglesFound = getShinglesFromSequence(sequence, minK, maxK);
             for (Shingle shingle : shinglesFound) {
                 if (shingleOccurrences.containsKey(shingle)) {
@@ -108,8 +110,13 @@ public class Sequence {
     public Sequence(int id, String scenario, List<Integer> groundTruth, List<Integer> motionWords) {
         this.id = id;
         this.scenario = scenario;
+        this.sequence = motionWords;
         computeGroundTruth(groundTruth);
         computeTf(motionWords);
+    }
+
+    public List<Integer> getSequence() {
+        return sequence;
     }
 
     private void computeGroundTruth(List<Integer> groundTruth) {

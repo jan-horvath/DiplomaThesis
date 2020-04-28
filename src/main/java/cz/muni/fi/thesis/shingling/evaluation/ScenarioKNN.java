@@ -10,7 +10,6 @@ public class ScenarioKNN {
 
     public static double evaluate(List<Sequence> sequences, Map<Integer, int[]> motionWordsKnn) {
         double result = 0.0;
-        int K_in_KNN = motionWordsKnn.values().iterator().next().length;
 
         Map<Integer, Sequence> sequenceMap = new HashMap<>();
         for (Sequence sequence : sequences) {
@@ -19,15 +18,19 @@ public class ScenarioKNN {
 
         for (Map.Entry<Integer, int[]> entry : motionWordsKnn.entrySet()) {
             Integer queryId = entry.getKey();
+            int sequencesWithMatchingScenario = 0;
             for (int compareSequenceId : entry.getValue()) {
                 String queryScenario = sequenceMap.get(queryId).getScenario();
                 String compareSequenceScenario = sequenceMap.get(compareSequenceId).getScenario();
                 if (queryScenario.equals(compareSequenceScenario)) {
-                    result += 1.0;
+                    sequencesWithMatchingScenario += 1.0;
                 }
             }
+
+            int K = entry.getValue().length;
+            result += ((double) sequencesWithMatchingScenario)/K;
         }
-        return result/(K_in_KNN*motionWordsKnn.size());
+        return result/motionWordsKnn.size();
     }
 
     public static Map<Integer, Integer> getVariableK(List<Sequence> sequences) {
@@ -44,7 +47,7 @@ public class ScenarioKNN {
         }
 
         for (Sequence sequence : sequences) {
-            variableK.put(sequence.getId(), scenarioCount.get(sequence.getScenario()) - 1);
+            variableK.put(sequence.getId(), scenarioCount.get(sequence.getScenario()));
         }
         return variableK;
     }

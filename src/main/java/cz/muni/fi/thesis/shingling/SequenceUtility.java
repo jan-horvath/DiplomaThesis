@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.MatrixType;
 import cz.muni.fi.thesis.shingling.similarity.OverlayJaccardSimilarity;
 import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 
@@ -7,10 +8,10 @@ import java.util.*;
 
 public class SequenceUtility {
 
-    private static Double computeWeightForMotionWord(int[] motionWord, Collection<List<int[]>> sequences) {
+    private static Double computeWeightForMotionWord(int[] motionWord, Map<Integer, List<int[]>> overlayData) {
         int count = 0;
-        for (List<int[]> sequence : sequences) {
-            for (int[] otherMW : sequence) {
+        for (Map.Entry<Integer, List<int[]>> sequenceEntry : overlayData.entrySet()) {
+            for (int[] otherMW : sequenceEntry.getValue()) {
                 if (OverlayJaccardSimilarity.overlayMotionWordsMatch(motionWord, otherMW, 1)) {
                     ++count;
                     break;
@@ -18,24 +19,29 @@ public class SequenceUtility {
             }
         }
 
-        return Math.log(sequences.size() / count);
+        return Math.log(((double) overlayData.size()) / count);
     }
 
-    private static List<Double> computeWeights(List<int[]> sequence, Collection<List<int[]>> sequences) {
+    private static List<Double> computeWeights(List<int[]> sequence, Map<Integer, List<int[]>> overlayData, boolean ignoreMaxIdf) {
         List<Double> weights = new ArrayList<>();
+        double maxIdf = Math.log(overlayData.size());
 
         for (int i = 0; i < sequence.size(); ++i) {
             int[] motionWord = sequence.get(i);
-            double weight = computeWeightForMotionWord(motionWord, sequences);
+            double weight = computeWeightForMotionWord(motionWord, overlayData);
+            if (ignoreMaxIdf && (Math.abs(weight - maxIdf) < 0.001)) {
+                weight = 0.0;
+            }
             weights.add(weight);
         }
         return weights;
     }
 
-    public static Map<Integer, OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> overlayData) {
+    /*TODO use sets to make this more efficient*/
+    public static Map<Integer, OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> overlayData, boolean ignoreMaxIdf) {
         Map<Integer, OverlaySequence> sequences = new HashMap<>();
         for (Map.Entry<Integer, List<int[]>> entry : overlayData.entrySet()) {
-            List<Double> weights = computeWeights(entry.getValue(), overlayData.values());
+            List<Double> weights = computeWeights(entry.getValue(), overlayData, ignoreMaxIdf);
             sequences.put(entry.getKey(), new OverlaySequence(entry.getValue(), weights));
         }
         return sequences;
@@ -70,7 +76,7 @@ public class SequenceUtility {
     public static void removeSparseScenarios(SimilarityMatrix sm, List<Sequence> sequences) {
         for (Sequence sequence : sequences) {
             String scenario = sequence.getScenario();
-            if (scenario.equals("01-04")) {
+            if (scenario.equals("01-04") || scenario.equals("01-04S")) {
                 sm.getMatrix().remove(sequence.getId());
             }
         }

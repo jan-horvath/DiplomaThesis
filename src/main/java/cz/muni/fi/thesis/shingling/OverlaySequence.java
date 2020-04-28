@@ -1,14 +1,40 @@
 package cz.muni.fi.thesis.shingling;
 
-import java.util.List;
+import java.util.*;
 
 public class OverlaySequence {
 
-    public final List<int[]> motionWords;
-    public final List<Double> weights;
+    private Map<MOMW5, Double> MOMWs = new HashMap<>();
+
+    public Map<MOMW5, Double> getMOMWs() {
+        return MOMWs;
+    }
 
     public OverlaySequence(List<int[]> motionWords, List<Double> weights) {
-        this.motionWords = motionWords;
-        this.weights = weights;
+        assert(motionWords.size() == weights.size());
+        for (int i = 0; i < motionWords.size(); ++i) {
+            MOMWs.put(new MOMW5(motionWords.get(i)), weights.get(i));
+        }
+    }
+
+    public class MOMW5 {
+        public final int[] motionWord;
+
+        public MOMW5(int[] motionWord) {
+            this.motionWord = motionWord;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            MOMW5 momw5 = (MOMW5) o;
+            return Arrays.equals(motionWord, momw5.motionWord);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(motionWord);
+        }
     }
 }

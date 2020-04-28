@@ -2,7 +2,7 @@ package cz.muni.fi.thesis.shingling.similarity;
 
 public class CosineSimilarity {
 
-    public static double computeSimilarity(double[] vec1, double[] vec2) {
+    /*public static double computeSimilarity(double[] vec1, double[] vec2) {
         assert (vec1.length == vec2.length);
 
         double vec1Magnitude = 0.0;
@@ -15,5 +15,5 @@ public class CosineSimilarity {
             vec2Magnitude += vec2[i] * vec2[i];
         }
         return dotProduct / Math.sqrt(vec1Magnitude * vec2Magnitude);
-    }
+    }*/
 }

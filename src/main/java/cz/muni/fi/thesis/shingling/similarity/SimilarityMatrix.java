@@ -178,28 +178,31 @@ public class SimilarityMatrix {
                         break;
                     }
                     case TFIDF_TFIDF: {
-                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(false), compareSequence.toTfIdfWeights(false));
+                        similarity = NonJaccardSimilarity.computeSimilarity(query.toTfIdfWeights(false), compareSequence.toTfIdfWeights(false));
                         break;
                     }
                     case TFIDF_TFIDF_IGNORE: {
-                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfIdfWeights(true));
+                        similarity = NonJaccardSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfIdfWeights(true));
                         break;
                     }
                     case TFIDF_TF_IGNORE: {
-                        similarity = CosineSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfWeights(true));
+                        similarity = NonJaccardSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfWeights(true));
                         break;
                     }
                     case INTERSECTION: {
-                        similarity = IntersectionSimilarity.computeSimilarityNoWeights(query.toSet(false), compareSequence.toSet(false));
+                        similarity = NonJaccardSimilarity.computeSimilarityNoWeights(query.toSet(false), compareSequence.toSet(false));
                         break;
                     } case INTERSECTION_IGNORE: {
-                        similarity = IntersectionSimilarity.computeSimilarityNoWeights(query.toSet(true), compareSequence.toSet(true));
+                        similarity = NonJaccardSimilarity.computeSimilarityNoWeights(query.toSet(true), compareSequence.toSet(true));
                         break;
                     } case INTERSECTION_IDF: {
-                        similarity = IntersectionSimilarity.computeSimilarityIdfWeights(query.toSet(false), compareSequence.toSet(false));
+                        similarity = NonJaccardSimilarity.computeSimilarityIdfWeights(query.toSet(false), compareSequence.toSet(false));
                         break;
                     } case INTERSECTION_IDF_IGNORE: {
-                        similarity = IntersectionSimilarity.computeSimilarityIdfWeights(query.toSet(true), compareSequence.toSet(true));
+                        similarity = NonJaccardSimilarity.computeSimilarityIdfWeights(query.toSet(true), compareSequence.toSet(true));
+                        break;
+                    } case DTW: {
+                        similarity = NonJaccardSimilarity.dtwSimilarity(query.getSequence(), compareSequence.getSequence());
                         break;
                     }
                     default: throw new IllegalStateException("This matrix type is not yet implemented!");

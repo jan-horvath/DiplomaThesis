@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class IntersectionSimilarity {
 
-    public static double computeSimilarityNoWeights(boolean[] set1, boolean[] set2) {
+    /*public static double computeSimilarityNoWeights(boolean[] set1, boolean[] set2) {
         if (set1.length != set2.length) {
             throw new IllegalArgumentException("Input arrays for JaccardSimilarity coefficient have different sizes.");
         }
@@ -35,5 +35,5 @@ public class IntersectionSimilarity {
             }
         }
         return intersection;
-    }
+    }*/
 }
