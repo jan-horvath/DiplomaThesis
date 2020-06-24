@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ public class SimilarityMatrixTest {
         return Math.abs(x - y) < 0.001;
     }
 
-    private boolean containsJaccardEntry(List<SimilarityMatrix.JaccardEntry> list, int recordId, double jaccardValue){
+    private boolean containsJaccardEntry(List<SimilarityMatrix.SimilarityEntry> list, int recordId, double jaccardValue){
         return list.stream().anyMatch(o -> (o.recordID == recordId) && (areClose(jaccardValue, o.jaccardValue)));
     }
 
@@ -24,7 +25,7 @@ public class SimilarityMatrixTest {
         sets.put(2, new boolean[]{false, false, true, true, false});
         sets.put(3, new boolean[]{false, false, false, true, true});
 
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromSets(sets, false).getMatrix();
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = SimilarityMatrix.createMatrixFromSets(sets, false).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size()).isEqualTo(3);
@@ -49,7 +50,7 @@ public class SimilarityMatrixTest {
         multisets.put(2, new int[]{0,5,5,10,0});
         multisets.put(3, new int[]{0,0,0,2,3});
 
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromMultisets(multisets).getMatrix();
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = SimilarityMatrix.createMatrixFromMultisets(multisets).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size()).isEqualTo(3);
@@ -73,7 +74,7 @@ public class SimilarityMatrixTest {
         minhashes.put(2, new int[]{0,1,2,3,4});
         minhashes.put(3, new int[]{0,0,0,0,5});
 
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = SimilarityMatrix.createMatrixFromMinhashes(minhashes).getMatrix();
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = SimilarityMatrix.createMatrixFromMinhashes(minhashes).getMatrix();
 
         for (int i = 1; i <= 3; ++i) {
             assertThat(matrix.get(i).size()).isEqualTo(3);

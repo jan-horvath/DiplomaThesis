@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ public class StridedShinglesTest {
         return Math.abs(x - y) < 0.001;
     }
 
-    private boolean containsJaccardEntry(List<SimilarityMatrix.JaccardEntry> list, int recordId, double jaccardValue){
+    private boolean containsJaccardEntry(List<SimilarityMatrix.SimilarityEntry> list, int recordId, double jaccardValue){
         return list.stream().anyMatch(o -> (o.recordID == recordId) && (areClose(jaccardValue, o.jaccardValue)));
     }
 
@@ -38,7 +39,7 @@ public class StridedShinglesTest {
     public void jaccardOnSetsTest() {
         Map<Integer, boolean[]> setsOfStridedShingles = ShingleUtility.createSetsOfStridedShingles(data, 2);
         SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles, false);
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = similarityMatrix.getMatrix();
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0)).isTrue();
         assertThat(containsJaccardEntry(matrix.get(2), 2, 1.0)).isTrue();
@@ -53,7 +54,7 @@ public class StridedShinglesTest {
     public void jaccardOnMultisetsTest() {
         Map<Integer, int[]> multisetsOfStridedShingles = ShingleUtility.createMultisetsOfStridedShingles(data, 2);
         SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromMultisets(multisetsOfStridedShingles);
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> matrix = similarityMatrix.getMatrix();
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = similarityMatrix.getMatrix();
 
         assertThat(containsJaccardEntry(matrix.get(1), 1, 0.5)).isTrue();
         assertThat(containsJaccardEntry(matrix.get(2), 2, 0.5)).isTrue();

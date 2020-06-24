@@ -1,9 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,7 +75,8 @@ public class DataLoader {
         Map<Integer, List<Integer>> motions = new HashMap<>();
 
         String line;
-        Pattern sequenceIdPattern = Pattern.compile("ObjectKey (\\d+?)_");
+        //Pattern sequenceIdPattern = Pattern.compile("ObjectKey (\\d+?)_");
+        Pattern sequenceIdPattern = Pattern.compile("[ -](\\d+?)_");
         Pattern motionWordsCountPattern = Pattern.compile("^(\\d+?);");
 
         while ((line = bufferedReader.readLine()) != null) {
@@ -121,7 +119,7 @@ public class DataLoader {
         Map<Integer, List<int[]>> motions = new HashMap<>();
 
         String line;
-        Pattern sequenceIdPattern = Pattern.compile("ObjectKey (\\d+?)_");
+        Pattern sequenceIdPattern = Pattern.compile("[ -](\\d+?)_");
         Pattern motionWordsCountPattern = Pattern.compile("^(\\d+?);");
 
         while ((line = bufferedReader.readLine()) != null) {
@@ -140,6 +138,41 @@ public class DataLoader {
                 motions.put(sequenceId, motionWords);
             }
         }
+        return motions;
+    }
+
+    static public Map<Integer, String> parseScenarioFile(String filename, boolean halvesSwitched) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
+        Map<Integer, String> motions = new HashMap<>();
+
+        if (!halvesSwitched) {
+            String line = bufferedReader.readLine();
+            assert (line.equals("seqId;HDM_seqId"));
+
+            Pattern sequenceIdPattern = Pattern.compile("(\\d+?);");
+            Pattern scenarioPattern = Pattern.compile("(\\d\\d-\\d\\d)");
+
+            while ((line = bufferedReader.readLine()) != null) {
+                Integer sequenceId = Integer.parseInt(matchFirstRegex(sequenceIdPattern, line));
+                String scenario = matchFirstRegex(scenarioPattern, line);
+                motions.put(sequenceId, scenario);
+            }
+        } else {
+            String line;
+            Pattern sequenceIdPattern = Pattern.compile("(\\d+?)_");
+            Pattern scenarioPattern = Pattern.compile("(\\d\\d-\\d\\d)");
+
+            while ((line = bufferedReader.readLine()) != null) {
+                Integer sequenceId = Integer.parseInt(matchFirstRegex(sequenceIdPattern, line));
+                String scenario = matchFirstRegex(scenarioPattern, line);
+                if (line.contains("SwitchedHalf")) {
+                    motions.put(sequenceId, scenario + "S");
+                } else {
+                    motions.put(sequenceId, scenario);
+                }
+            }
+        }
+
         return motions;
     }
 }

@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
+import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class WeightedJaccardMWTest {
         return Math.abs(x - y) < 0.001;
     }
 
-    private boolean containsJaccardEntry(List<SimilarityMatrix.JaccardEntry> list, int recordId, double jaccardValue){
+    private boolean containsJaccardEntry(List<SimilarityMatrix.SimilarityEntry> list, int recordId, double jaccardValue){
         return list.stream().anyMatch(o -> (o.recordID == recordId) && (areClose(jaccardValue, o.jaccardValue)));
     }
 
@@ -42,7 +43,7 @@ public class WeightedJaccardMWTest {
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(filename);
         ShingleUtility.computeInverseDocumentFrequencyForShingles(data, 1, 2, false);
         Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, 1,2);
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> dataMatrix =
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> dataMatrix =
                 SimilarityMatrix.createMatrixFromSets(dataShingles, true).getMatrix();
 
         double A = Math.log(1.5);
@@ -58,7 +59,7 @@ public class WeightedJaccardMWTest {
         Map<Integer, List<Integer>> data = DataLoader.parseDataFile(filename);
         ShingleUtility.computeInverseDocumentFrequencyForShingles(data, 1, 2, true);
         Map<Integer, boolean[]> dataShingles = ShingleUtility.createSetsOfShingles(data, 1,2);
-        Map<Integer, List<SimilarityMatrix.JaccardEntry>> dataMatrix =
+        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> dataMatrix =
                 SimilarityMatrix.createMatrixFromSets(dataShingles, true).getMatrix();
 
         double A = Math.log(1.5);
