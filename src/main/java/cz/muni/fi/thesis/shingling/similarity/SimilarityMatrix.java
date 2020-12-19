@@ -113,23 +113,23 @@ public class SimilarityMatrix {
             List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
 
             switch (overlayJaccardNumber) {
-                case OverlayJaccardSimilarity.SET_EQUIVALENT : {
+                case OverlaySimilarity.SET_EQUIVALENT : {
                     for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                        double value = OverlayJaccardSimilarity.overlayJaccard1(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                        double value = OverlaySimilarity.overlayJaccard1(entry1.getValue(), entry2.getValue(), matchingsRequired);
                         jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
                     }
                     break;
                 }
-                case OverlayJaccardSimilarity.COUNT_EACH_ONCE : {
+                case OverlaySimilarity.COUNT_EACH_ONCE : {
                     for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                        double value = OverlayJaccardSimilarity.overlayJaccard3(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                        double value = OverlaySimilarity.overlayJaccard3(entry1.getValue(), entry2.getValue(), matchingsRequired);
                         jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
                     }
                     break;
                 }
-                case OverlayJaccardSimilarity.MULTISET_EQUIVALENT : {
+                case OverlaySimilarity.MULTISET_EQUIVALENT : {
                     for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                        double value = OverlayJaccardSimilarity.overlayJaccard2(entry1.getValue(), entry2.getValue(), matchingsRequired);
+                        double value = OverlaySimilarity.overlayJaccard2(entry1.getValue(), entry2.getValue(), matchingsRequired);
                         jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
                     }
                     break;
@@ -155,38 +155,49 @@ public class SimilarityMatrix {
                 switch (type) { //make this switch into a private function
                     case SET: {
                         similarity = JaccardSimilarity.computeJaccard(query.toSet(false), compareSequence.toSet(false));
+                        //similarity = NonJaccardSimilarity.cosineSimilarity(query.toSet(false), compareSequence.toSet(false));
                         break;
                     }
                     case SET_IGNORE: {
                         similarity = JaccardSimilarity.computeJaccard(query.toSet(true), compareSequence.toSet(true));
+                        //similarity = NonJaccardSimilarity.cosineSimilarity(query.toSet(true), compareSequence.toSet(true));
                         break;
                     }
                     case MULTISET: {
                         similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(false), compareSequence.toMultiset(false));
+                        //similarity = NonJaccardSimilarity.cosineSimilarity(query.toMultiset(false), compareSequence.toMultiset(false));
                         break;
                     }
                     case MULTISET_IGNORE: {
                         similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(true), compareSequence.toMultiset(true));
+                        //similarity = NonJaccardSimilarity.cosineSimilarity(query.toMultiset(true), compareSequence.toMultiset(true));
+                        break;
+                    }
+                    case TF: {
+                        similarity = JaccardSimilarity.weighedJaccard3(query.toTfWeights(false), compareSequence.toTfWeights(false));
+                        //similarity = NonJaccardSimilarity.cosineSimilarity(query.toTfWeights(false), compareSequence.toTfWeights(false));
                         break;
                     }
                     case IDF: {
-                        similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(false), compareSequence.toSet(false), Sequence.getIdf());
+                        //similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(false), compareSequence.toSet(false), Sequence.getIdf());
+                        similarity = NonJaccardSimilarity.cosineSimilarity(query.toIdfWeights(false), compareSequence.toIdfWeights(false));
                         break;
                     }
                     case IDF_IGNORE: {
-                        similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(true), compareSequence.toSet(true), Sequence.getIdf());
+                        //similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(true), compareSequence.toSet(true), Sequence.getIdf());
+                        similarity = NonJaccardSimilarity.cosineSimilarity(query.toIdfWeights(true), compareSequence.toIdfWeights(true));
                         break;
                     }
                     case TFIDF_TFIDF: {
-                        similarity = NonJaccardSimilarity.computeSimilarity(query.toTfIdfWeights(false), compareSequence.toTfIdfWeights(false));
+                        similarity = NonJaccardSimilarity.cosineSimilarity(query.toTfIdfWeights(false), compareSequence.toTfIdfWeights(false));
                         break;
                     }
                     case TFIDF_TFIDF_IGNORE: {
-                        similarity = NonJaccardSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfIdfWeights(true));
+                        similarity = NonJaccardSimilarity.cosineSimilarity(query.toTfIdfWeights(true), compareSequence.toTfIdfWeights(true));
                         break;
                     }
                     case TFIDF_TF_IGNORE: {
-                        similarity = NonJaccardSimilarity.computeSimilarity(query.toTfIdfWeights(true), compareSequence.toTfWeights(true));
+                        similarity = NonJaccardSimilarity.cosineSimilarity(query.toTfIdfWeights(true), compareSequence.toTfWeights(true));
                         break;
                     }
                     case INTERSECTION: {

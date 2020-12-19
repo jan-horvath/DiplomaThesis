@@ -2,7 +2,10 @@ package cz.muni.fi.thesis.shingling.similarity;
 
 import cz.muni.fi.thesis.shingling.ShingleUtility;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class contains static function which compute jaccard coefficients
@@ -34,6 +37,9 @@ public class JaccardSimilarity {
         return ((double) intersection)/union;
     }
 
+    /**
+     * Weighted version of Jaccard. Works for weights which are independent of a sequence, i.e. IDF
+     */
     public static double computeWeighedJaccard(boolean[] set1, boolean[] set2, Map<Integer, Double> weights) {
         double intersection = 0.0;
         double union = 0.0;
@@ -48,6 +54,23 @@ public class JaccardSimilarity {
         }
 
         return  intersection/union;
+    }
+
+    /**
+     * Weighted version of a Jaccard. Works even for weights which are dependent on a sequence
+     */
+    public static double weighedJaccard3(double[] set1, double[] set2) {
+        double weightOfMatchedMotionWords = 0.0;
+        double weightOfAllWords = 0.0;
+
+        for (int i = 0; i < set1.length; ++i) {
+            if (set1[i] != 0.0 && set2[i] != 0.0) {
+                weightOfMatchedMotionWords += set1[i] + set2[i];
+            }
+            weightOfAllWords += set1[i] + set2[i];
+        }
+
+        return weightOfMatchedMotionWords/weightOfAllWords;
     }
 
     /**

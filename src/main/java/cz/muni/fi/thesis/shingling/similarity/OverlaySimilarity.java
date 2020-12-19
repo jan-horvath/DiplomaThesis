@@ -4,7 +4,7 @@ import cz.muni.fi.thesis.shingling.OverlaySequence;
 
 import java.util.*;
 
-public class OverlayJaccardSimilarity {
+public class OverlaySimilarity {
 
     public static final int SET_EQUIVALENT = 1;
     public static final int COUNT_EACH_ONCE = 2;
@@ -21,6 +21,9 @@ public class OverlayJaccardSimilarity {
         return matchingsFound >= matchingsRequired;
     }
 
+    /**
+     * Jaccard inspired weighted similarity for MOMWs (based on the non-weighed vesion 3)
+     */
     public static double weighedOverlayJaccard3(OverlaySequence os1, OverlaySequence os2, int matchingsRequired) {
         Set<int[]> seq1_matched = new HashSet<>();
         Set<int[]> seq2_matched = new HashSet<>();
@@ -50,6 +53,10 @@ public class OverlayJaccardSimilarity {
         return weightOfMatchedMotionWords/weightOfAllMotionWords;
     }
 
+    /**
+     * Jaccard inspired similarity for MOMWs (version 3)
+     * This version has the best results
+     */
     public static double overlayJaccard3(List<int[]> seq1, List<int[]> seq2, int matchingsRequired) {
         Set<Integer> seq1_matched = new HashSet<>();
         Set<Integer> seq2_matched = new HashSet<>();

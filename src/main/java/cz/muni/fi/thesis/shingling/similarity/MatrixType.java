@@ -7,6 +7,7 @@ public enum MatrixType {
     SET_IGNORE,
     MULTISET,
     MULTISET_IGNORE,
+    TF,
     TFIDF_TFIDF,
     TFIDF_TFIDF_IGNORE,
     TFIDF_TF_IGNORE,

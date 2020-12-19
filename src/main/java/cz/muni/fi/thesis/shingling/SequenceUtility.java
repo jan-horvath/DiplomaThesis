@@ -1,7 +1,6 @@
 package cz.muni.fi.thesis.shingling;
 
-import cz.muni.fi.thesis.shingling.similarity.MatrixType;
-import cz.muni.fi.thesis.shingling.similarity.OverlayJaccardSimilarity;
+import cz.muni.fi.thesis.shingling.similarity.OverlaySimilarity;
 import cz.muni.fi.thesis.shingling.similarity.SimilarityMatrix;
 
 import java.util.*;
@@ -12,7 +11,7 @@ public class SequenceUtility {
         int count = 0;
         for (Map.Entry<Integer, List<int[]>> sequenceEntry : overlayData.entrySet()) {
             for (int[] otherMW : sequenceEntry.getValue()) {
-                if (OverlayJaccardSimilarity.overlayMotionWordsMatch(motionWord, otherMW, 1)) {
+                if (OverlaySimilarity.overlayMotionWordsMatch(motionWord, otherMW, 1)) {
                     ++count;
                     break;
                 }
@@ -37,6 +36,9 @@ public class SequenceUtility {
         return weights;
     }
 
+    /**
+     * This function computes weights for each MOMW in every sequence. This takes a long time
+     */
     /*TODO use sets to make this more efficient*/
     public static Map<Integer, OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> overlayData, boolean ignoreMaxIdf) {
         Map<Integer, OverlaySequence> sequences = new HashMap<>();
@@ -51,19 +53,19 @@ public class SequenceUtility {
                                                  Map<Integer, List<Integer>> motionWords,
                                                  Map<Integer, String> scenarios) {
         List<Sequence> sequences = new ArrayList<>();
-        Map<String, Integer> scenarioCount = new HashMap<>();
+        //Map<String, Integer> scenarioCount = new HashMap<>();
 
         for (Integer seqID : groundTruth.keySet()) {
             assert(motionWords.containsKey(seqID));
             assert(scenarios.containsKey(seqID));
 
             String scenario = scenarios.get(seqID);
-            if (!scenarioCount.containsKey(scenario)) {
+            sequences.add(new Sequence(seqID, scenario, groundTruth.get(seqID), motionWords.get(seqID)));
+            /*if (!scenarioCount.containsKey(scenario)) {
                 scenarioCount.put(scenario, 1);
             } else {
                 scenarioCount.put(scenario, scenarioCount.get(scenario) + 1);
-            }
-            sequences.add(new Sequence(seqID, scenario, groundTruth.get(seqID), motionWords.get(seqID)));
+            }*/
         }
 
         /*for (Map.Entry<String, Integer> entry : scenarioCount.entrySet()) {
@@ -73,6 +75,9 @@ public class SequenceUtility {
         return sequences;
     }
 
+    /**
+     * Removes scenarios "01-04" and "01-04S" (01-04 but switched), i.e. the ones that have only single sequence
+     */
     public static void removeSparseScenarios(SimilarityMatrix sm, List<Sequence> sequences) {
         for (Sequence sequence : sequences) {
             String scenario = sequence.getScenario();
