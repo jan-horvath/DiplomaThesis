@@ -32,9 +32,6 @@ public class Sequence {
         return scenario;
     }
 
-    private boolean[] groundTruthSet;
-    private int[] groundTruthMultiset;
-
     private boolean[] set;
     private boolean[] set_ignore;
     private int[] multiset;
@@ -107,26 +104,15 @@ public class Sequence {
 
     //------------------------------------------Non-static functions----------------------------------------------------
 
-    public Sequence(int id, String scenario, List<Integer> groundTruth, List<Integer> motionWords) {
+    public Sequence(int id, String scenario, List<Integer> motionWords) {
         this.id = id;
         this.scenario = scenario;
         this.sequence = motionWords;
-        computeGroundTruth(groundTruth);
         computeTf(motionWords);
     }
 
     public List<Integer> getSequence() {
         return sequence;
-    }
-
-    private void computeGroundTruth(List<Integer> groundTruth) {
-        groundTruthSet = new boolean[maxAction - minAction + 1];
-        groundTruthMultiset = new int[maxAction - minAction + 1];
-        for (Integer motionWord : groundTruth) {
-            int index = motionWord - minAction;
-            groundTruthSet[index] = true;
-            ++groundTruthMultiset[index];
-        }
     }
 
     private void computeTf(List<Integer> motionWords) {
@@ -142,14 +128,6 @@ public class Sequence {
                 term_frequency.put(shingleIndex, term_frequency.get(shingleIndex) + 1);
             }
         }
-    }
-
-    public boolean[] getGroundTruthSet() {
-        return groundTruthSet;
-    }
-
-    public int[] getGroundTruthMultiset() {
-        return groundTruthMultiset;
     }
 
     public boolean[] toSet(boolean ignoreMaxIdf) {

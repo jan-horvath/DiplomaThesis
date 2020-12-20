@@ -1,0 +1,61 @@
+Test:
+Map<Integer, List<Integer>> GTdata = DataLoader.parseGroundTruthFile(System.getProperty("user.dir") + "\\MW_database\\ground_truth_test2.txt");
+        Map<Integer, List<Integer>> annotatedData = DataLoader.parseDataFile(System.getProperty("user.dir") + "\\MW_database\\annotations-test.data");
+
+        Map<Integer, boolean[]> GTShingles = Shingles.createSetsOfShingles(GTdata, 100, 114, 1);
+        System.out.println("_____________________________________________________________");
+        Map<Integer, boolean[]> AnShingles = Shingles.createSetsOfShingles(annotatedData, 300, 314, 1);
+
+        JaccardMatrix GTMatrix = JaccardMatrix.createMatrixFromSets(GTShingles);
+        JaccardMatrix AnMatrix = JaccardMatrix.createMatrixFromSets(AnShingles);
+
+        System.out.println(GTMatrix);
+        System.out.println("_____________________________________________________________");
+        System.out.println(AnMatrix);
+
+        System.out.println("_____________________________________________________________");
+        System.out.println("_____________________________________________________________");
+
+        Map<Integer, int[]> GT_KNN = KNN.bulkExtractIndicesOfKHighest(GTMatrix, 2);
+        Map<Integer, int[]> AnKNN = KNN.bulkExtractIndicesOfKHighest(AnMatrix, 2);
+
+        System.out.println(GT_KNN);
+        System.out.println("_____________________________________________________________");
+        System.out.println(AnKNN);
+
+        System.out.println("_____________________________________________________________");
+        System.out.println("_____________________________________________________________");
+
+        System.out.println("Final evaluation: " + KNN.bulkEvaluateKNN(GT_KNN, AnKNN)*100 + "%");
+		
+Expected output:
+_____________________________________________________________
+11: (11, 1.0), (12, 0.5), (13, 0.0), (14, 0.08333333333333333), (15, 0.6), 
+12: (11, 0.5), (12, 1.0), (13, 0.0), (14, 0.14285714285714285), (15, 0.375), 
+13: (11, 0.0), (12, 0.0), (13, 1.0), (14, 0.3333333333333333), (15, 0.0), 
+14: (11, 0.08333333333333333), (12, 0.14285714285714285), (13, 0.3333333333333333), (14, 1.0), (15, 0.0), 
+15: (11, 0.6), (12, 0.375), (13, 0.0), (14, 0.0), (15, 1.0), 
+
+_____________________________________________________________
+11: (11, 1.0), (12, 0.8), (13, 0.0), (14, 0.08333333333333333), (15, 0.7272727272727273), 
+12: (11, 0.8), (12, 1.0), (13, 0.0), (14, 0.1), (15, 0.8888888888888888), 
+13: (11, 0.0), (12, 0.0), (13, 1.0), (14, 0.3333333333333333), (15, 0.07692307692307693), 
+14: (11, 0.08333333333333333), (12, 0.1), (13, 0.3333333333333333), (14, 1.0), (15, 0.2), 
+15: (11, 0.7272727272727273), (12, 0.8888888888888888), (13, 0.07692307692307693), (14, 0.2), (15, 1.0), 
+
+_____________________________________________________________
+_____________________________________________________________
+11: [15, 12]
+12: [11, 15]
+13: [14, 15]
+14: [13, 12]
+15: [11, 12]
+_____________________________________________________________
+11: [12, 15]
+12: [15, 11]
+13: [14, 15]
+14: [13, 15]
+15: [12, 11]
+_____________________________________________________________
+_____________________________________________________________
+Final evaluation: 90.0%

@@ -26,11 +26,11 @@ public class NonJaccardSimilarityTest {
         motionWords.put(20, Arrays.asList(5,5,5,5,5));
         motionWords.put(30, Arrays.asList(8,7,6));
 
-        Map<Integer, List<Integer>> groundTruth = new HashMap<>();
+        /*Map<Integer, List<Integer>> groundTruth = new HashMap<>();
         groundTruth.put(0, Collections.singletonList(99));
         groundTruth.put(10, Collections.singletonList(99));
         groundTruth.put(20, Collections.singletonList(99));
-        groundTruth.put(30, Collections.singletonList(99));
+        groundTruth.put(30, Collections.singletonList(99));*/
 
         Map<Integer, String> scenarios = new HashMap<>();
         scenarios.put(0, "01-01");
@@ -39,7 +39,7 @@ public class NonJaccardSimilarityTest {
         scenarios.put(30, "01-02");
 
         Sequence.setUp(motionWords, 1, 1, 99, 99);
-        sequences = SequenceUtility.createSequences(groundTruth, motionWords, scenarios);
+        sequences = SequenceUtility.createSequences(motionWords, scenarios);
         shingleIds = Sequence.getShingleIds();
     }
 

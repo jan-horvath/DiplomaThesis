@@ -1,7 +1,3 @@
-TestFiles/*
-Shingling.iml
-MW_database/*
 .idea
-JavaDoc
-out
-Tables
+target/*
+statistics_and_other/*

@@ -1,0 +1,20 @@
+#objectKey messif.objects.keys.AbstractObjectKey 100_0_0_0
+5;mcdr.objects.impl.ObjectMotionWord
+336,284,324,152,251
+336,284,324,152,251
+336,284,324,152,251
+336,284,324,152,25
+336,284,324,152,161
+#objectKey messif.objects.keys.AbstractObjectKey 200_0_0_0
+5;mcdr.objects.impl.ObjectMotionWord
+344,247,45,61,110
+6,280,45,61,110
+6,27,45,61,171
+6,250,214,61,0
+6,250,319,328,158
+#objectKey messif.objects.keys.AbstractObjectKey 300_0_0_0
+4;mcdr.objects.impl.ObjectMotionWord
+6,250,265,328,347
+198,301,45,61,110
+208,301,45,61,110
+6,27,45,61,110

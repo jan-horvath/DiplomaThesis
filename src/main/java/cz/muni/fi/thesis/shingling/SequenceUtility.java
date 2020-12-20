@@ -49,28 +49,17 @@ public class SequenceUtility {
         return sequences;
     }
 
-    public static List<Sequence> createSequences(Map<Integer, List<Integer>> groundTruth,
-                                                 Map<Integer, List<Integer>> motionWords,
+    public static List<Sequence> createSequences(Map<Integer, List<Integer>> motionWords,
                                                  Map<Integer, String> scenarios) {
         List<Sequence> sequences = new ArrayList<>();
-        //Map<String, Integer> scenarioCount = new HashMap<>();
 
-        for (Integer seqID : groundTruth.keySet()) {
+        for (Integer seqID : motionWords.keySet()) {
             assert(motionWords.containsKey(seqID));
             assert(scenarios.containsKey(seqID));
 
             String scenario = scenarios.get(seqID);
-            sequences.add(new Sequence(seqID, scenario, groundTruth.get(seqID), motionWords.get(seqID)));
-            /*if (!scenarioCount.containsKey(scenario)) {
-                scenarioCount.put(scenario, 1);
-            } else {
-                scenarioCount.put(scenario, scenarioCount.get(scenario) + 1);
-            }*/
+            sequences.add(new Sequence(seqID, scenario, motionWords.get(seqID)));
         }
-
-        /*for (Map.Entry<String, Integer> entry : scenarioCount.entrySet()) {
-            System.out.println(entry);
-        }*/
 
         return sequences;
     }

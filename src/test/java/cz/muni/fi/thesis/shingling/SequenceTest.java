@@ -20,10 +20,10 @@ public class SequenceTest {
         motionWords.put(2, Arrays.asList(7,7,6,6,5,5));
         motionWords.put(3, Arrays.asList(5,5,5,5,5));
 
-        Map<Integer, List<Integer>> groundTruth = new HashMap<>();
+        /*Map<Integer, List<Integer>> groundTruth = new HashMap<>();
         groundTruth.put(1, Collections.singletonList(99));
         groundTruth.put(2, Collections.singletonList(99));
-        groundTruth.put(3, Collections.singletonList(99));
+        groundTruth.put(3, Collections.singletonList(99));*/
 
         Map<Integer, String> scenarios = new HashMap<>();
         scenarios.put(1, "01-01");
@@ -31,7 +31,7 @@ public class SequenceTest {
         scenarios.put(3, "01-01");
 
         Sequence.setUp(motionWords, 1, 1, 99, 99);
-        sequences = SequenceUtility.createSequences(groundTruth, motionWords, scenarios);
+        sequences = SequenceUtility.createSequences(motionWords, scenarios);
         shingleIds = Sequence.getShingleIds();
     }
 

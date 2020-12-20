@@ -31,33 +31,6 @@ public class DataLoader {
     }
 
     /**
-     * This function requires data to be in the following format: <sequenceId>_<classId>_<offset>_<length>
-     *
-     * @param filename - filename
-     * @return map, which assigns a list of classIds (including duplicates) to every sequenceId
-     * @throws IOException for non existing file
-     */
-    static public Map<Integer, List<Integer>> parseGroundTruthFile(String filename) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
-        Map<Integer, List<Integer>> groundTruth = new HashMap<>();
-
-        String line;
-        Pattern sequenceIdPattern = Pattern.compile("^(\\d+?)_");
-        Pattern classIdPattern = Pattern.compile("_(\\d+?)_");
-
-        while ((line = br.readLine()) != null) {
-            Integer sequenceId = Integer.parseInt(matchFirstRegex(sequenceIdPattern, line));
-            int classId = Integer.parseInt(matchFirstRegex(classIdPattern, line));
-
-            if (!groundTruth.containsKey(sequenceId)) {
-                groundTruth.put(sequenceId, new ArrayList<>());
-            }
-            groundTruth.get(sequenceId).add(classId);
-        }
-        return groundTruth;
-    }
-
-    /**
      * This function expects the data to contain individual MoCap recording represented by motion words.
      * Every recording should start with:
      *
