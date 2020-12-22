@@ -12,7 +12,6 @@ import java.util.*;
 
 /**TODO
  * remove ground truth - this is based on action which we do not use anymore, we now use scenarios as actions
- * remove minhashing
  * remove any output prints meant for debugging and statistics
  * remove "ignore IDF" stuff
  * comment on TF (double) vs Multiset (int)
