@@ -20,10 +20,6 @@ public class ShingleUtility {
         ShingleUtility.IDF = IDF;
     }
 
-    public static Set<Integer> getMaxIDFShingles() {
-        return maxIDFShingles;
-    }
-
     public static BiMap<Shingle, Integer> getShingleIDs() {
         return shingleIDs;
     }

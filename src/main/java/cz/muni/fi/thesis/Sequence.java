@@ -9,7 +9,6 @@ public class Sequence {
     private static int minK, maxK, minAction, maxAction;
     private static BiMap<Shingle, Integer> shingleIds;
     private static Map<Integer, Double> idf;
-    private static double maxIdf;
     private static int nextId = 0;
     private static int nextShingleID() {return nextId++;}
 
@@ -33,13 +32,9 @@ public class Sequence {
     }
 
     private boolean[] set;
-    private boolean[] set_ignore;
     private int[] multiset;
-    private int[] multiset_ignore;
     private double[] tfidf;
-    private double[] tfidf_ignore;
     private double[] tf;
-    private double[] tf_ignore;
 
 
     //--------------------------------------------Static functions------------------------------------------------------
@@ -52,7 +47,6 @@ public class Sequence {
         nextId = 0;
         createShingleIds(data, minK, maxK);
         computeIdf(data, minK, maxK);
-        maxIdf = Math.log(data.size());
     }
 
     private static void createShingleIds(Map<Integer, List<Integer>> data, int minK, int maxK) {
@@ -130,128 +124,55 @@ public class Sequence {
         }
     }
 
-    public boolean[] toSet(boolean ignoreMaxIdf) {
-        if (ignoreMaxIdf) {
-            if (set_ignore == null) {
-                set_ignore = new boolean[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    if (entry.getValue() > 0) {set_ignore[entry.getKey()] = true;}
-                }
-                ignoreMaxIdf(set_ignore);
-            }
-            return set_ignore;
-        } else {
-            if (set == null) {
-                set = new boolean[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    if (entry.getValue() > 0) {
-                        set[entry.getKey()] = true;
-                    }
+    public boolean[] toSet() {
+        if (set == null) {
+            set = new boolean[term_frequency.size()];
+            for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
+                if (entry.getValue() > 0) {
+                    set[entry.getKey()] = true;
                 }
             }
-            return set;
         }
+        return set;
     }
 
-    public int[] toMultiset(boolean ignoreMaxIdf) {
-        if (ignoreMaxIdf) {
-            if (multiset_ignore == null) {
-                multiset_ignore = new int[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    multiset_ignore[entry.getKey()] = entry.getValue();
-                }
-                ignoreMaxIdf(multiset_ignore);
+    public int[] toMultiset() {
+       if (multiset == null) {
+            multiset = new int[term_frequency.size()];
+            for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
+                multiset[entry.getKey()] = entry.getValue();
             }
-            return multiset_ignore;
-        } else {
-            if (multiset == null) {
-                multiset = new int[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    multiset[entry.getKey()] = entry.getValue();
-                }
-            }
-            return multiset;
         }
+        return multiset;
     }
 
-    public double[] toTfWeights(boolean ignoreMaxIdf) {
-        if (ignoreMaxIdf) {
-            if (tf_ignore == null) {
-                tf_ignore = new double[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    tf_ignore[entry.getKey()] = entry.getValue();
-                }
-                ignoreMaxIdf(tf_ignore);
+    public double[] toTfWeights() {
+        if (tf == null) {
+            tf = new double[term_frequency.size()];
+            for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
+                tf[entry.getKey()] = entry.getValue();
             }
-            return tf_ignore;
-        } else {
-            if (tf == null) {
-                tf = new double[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    tf[entry.getKey()] = entry.getValue();
-                }
-            }
-            return tf;
         }
+        return tf;
     }
 
-    public double[] toIdfWeights(boolean ignoreMaxIdf) {
+    public double[] toIdfWeights() {
         double[] weights = new double[term_frequency.size()];
         for (Map.Entry<Integer, Double> entry : idf.entrySet()) {
             if (term_frequency.get(entry.getKey()) > 0) {
                 weights[entry.getKey()] = entry.getValue();
             }
         }
-        return ignoreMaxIdf ? ignoreMaxIdf(weights) : weights;
-    }
-
-    public double[] toTfIdfWeights(boolean ignoreMaxIdf) {
-        if (ignoreMaxIdf) {
-            if (tfidf_ignore == null) {
-                tfidf_ignore = new double[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    tfidf_ignore[entry.getKey()] = entry.getValue() * idf.get(entry.getKey());
-                }
-                ignoreMaxIdf(tfidf_ignore);
-            }
-            return tfidf_ignore;
-        } else {
-            if (tfidf == null) {
-                tfidf = new double[term_frequency.size()];
-                for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                    tfidf[entry.getKey()] = entry.getValue() * idf.get(entry.getKey());
-                }
-            }
-            return tfidf;
-        }
-    }
-
-    //------------------------------------------------Ignore max IDF----------------------------------------------------
-
-    private boolean[] ignoreMaxIdf(boolean[] set) {
-        for (Map.Entry<Integer, Double> entry : idf.entrySet()) {
-            if (Math.abs(entry.getValue() - maxIdf) < 0.001) {
-                set[entry.getKey()] = false;
-            }
-        }
-        return set;
-    }
-
-    private int[] ignoreMaxIdf(int[] multiset) {
-        for (Map.Entry<Integer, Double> entry : idf.entrySet()) {
-            if (Math.abs(entry.getValue() - maxIdf) < 0.001) {
-                multiset[entry.getKey()] = 0;
-            }
-        }
-        return multiset;
-    }
-
-    private double[] ignoreMaxIdf(double[] weights) {
-        for (Map.Entry<Integer, Double> entry : idf.entrySet()) {
-            if (Math.abs(entry.getValue() - maxIdf) < 0.001) {
-                weights[entry.getKey()] = 0.0;
-            }
-        }
         return weights;
+    }
+
+    public double[] toTfIdfWeights() {
+        if (tfidf == null) {
+            tfidf = new double[term_frequency.size()];
+            for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
+                tfidf[entry.getKey()] = entry.getValue() * idf.get(entry.getKey());
+            }
+        }
+        return tfidf;
     }
 }

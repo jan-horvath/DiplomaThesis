@@ -11,9 +11,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 /**TODO
- * remove ground truth - this is based on action which we do not use anymore, we now use scenarios as actions
- * remove any output prints meant for debugging and statistics
- * remove "ignore IDF" stuff
  * comment on TF (double) vs Multiset (int)
  * add documentation
  */
@@ -32,7 +29,7 @@ public class Main {
         MoCapData data = MoCapDataLoader.loadData();
         System.out.println("Loading: " + (System.nanoTime() - start)/1000000 + "ms");
 
-        //Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMomwDataset(), true);
+        Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMomwDataset());
         Sequence.setUp(data.getHmwDataset(), 1,1, MIN_ACTION, MAX_ACTION);
         List<Sequence> sequences = SequenceUtility.createSequences(data.getHmwDataset(), data.getOrderFreeScenarios());
         Map<Integer, Integer> K = ScenarioKNN.getVariableK(sequences);
@@ -41,26 +38,26 @@ public class Main {
         SimilarityMatrix matrix = new SimilarityMatrix();
 
         // DTW and non-weighed overlay Jaccard
-        for (Map.Entry<Integer, List<int[]>> query : data.getMomwDataset().entrySet()) {
-            List<SimilarityMatrix.SimilarityEntry> similarityEntries = new ArrayList<>();
-            List<int[]> queryMWs = query.getValue();
-            for (Map.Entry<Integer, List<int[]>> compareSequence : data.getMomwDataset().entrySet()) {
-                double similarity = OverlaySimilarity.dtwSimilarity(queryMWs, compareSequence.getValue(), 1);
-                //double similarity = OverlaySimilarity.overlayJaccard3(queryMWs, compareSequence.getValue(), 1);
-                similarityEntries.add(new SimilarityMatrix.SimilarityEntry(compareSequence.getKey(), similarity));
-            }
-            matrix.getMatrix().put(query.getKey(), similarityEntries);
-        }
+//        for (Map.Entry<Integer, List<int[]>> query : data.getMomwDataset().entrySet()) {
+//            List<SimilarityMatrix.SimilarityEntry> similarityEntries = new ArrayList<>();
+//            List<int[]> queryMWs = query.getValue();
+//            for (Map.Entry<Integer, List<int[]>> compareSequence : data.getMomwDataset().entrySet()) {
+//                double similarity = OverlaySimilarity.dtwSimilarity(queryMWs, compareSequence.getValue(), 1);
+//                //double similarity = OverlaySimilarity.overlayJaccard3(queryMWs, compareSequence.getValue(), 1);
+//                similarityEntries.add(new SimilarityMatrix.SimilarityEntry(compareSequence.getKey(), similarity));
+//            }
+//            matrix.getMatrix().put(query.getKey(), similarityEntries);
+//        }
 
         //weighed overlay Jaccard
-//        for (Map.Entry<Integer, OverlaySequence> queryEntry : overlaySequences.entrySet()) {
-//            List<SimilarityMatrix.SimilarityEntry> similarityEntries = new ArrayList<>();
-//            for (Map.Entry<Integer, OverlaySequence> compareEntry : overlaySequences.entrySet()) {
-//                double similarity = OverlaySimilarity.weighedOverlayJaccard3(queryEntry.getValue(), compareEntry.getValue(), 1);
-//                similarityEntries.add(new SimilarityMatrix.SimilarityEntry(compareEntry.getKey(), similarity));
-//            }
-//            matrix.getMatrix().put(queryEntry.getKey(), similarityEntries);
-//        }
+        for (Map.Entry<Integer, OverlaySequence> queryEntry : overlaySequences.entrySet()) {
+            List<SimilarityMatrix.SimilarityEntry> similarityEntries = new ArrayList<>();
+            for (Map.Entry<Integer, OverlaySequence> compareEntry : overlaySequences.entrySet()) {
+                double similarity = OverlaySimilarity.weighedOverlayJaccard3(queryEntry.getValue(), compareEntry.getValue(), 1);
+                similarityEntries.add(new SimilarityMatrix.SimilarityEntry(compareEntry.getKey(), similarity));
+            }
+            matrix.getMatrix().put(queryEntry.getKey(), similarityEntries);
+        }
         //------------------------
 
         SequenceUtility.removeSparseScenarios(matrix, sequences);
@@ -84,13 +81,13 @@ public class Main {
         System.out.println("Loading: " + (System.nanoTime() - start)/1000000 + "ms");
 
         start = System.nanoTime();
-        Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMomwDataset(), true);
+        Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMomwDataset());
         System.out.println("MOMW IDF computation: " + (System.nanoTime() - start)/1000000 + "ms");
 
         start = System.nanoTime();
         Sequence.setUp(data.getHmwDataset(), 1,1, MIN_ACTION, MAX_ACTION);
         List<Sequence> sequences = SequenceUtility.createSequences(data.getHmwDataset(), data.getOrderFreeScenarios());
-        SimilarityMatrix hardMwsMatrix = SimilarityMatrix.createMatrix(sequences, MatrixType.IDF_IGNORE);
+        SimilarityMatrix hardMwsMatrix = SimilarityMatrix.createMatrix(sequences, MatrixType.IDF);
         SequenceUtility.removeSparseScenarios(hardMwsMatrix, sequences);
 
         Map<Integer, Integer> variableK = ScenarioKNN.getVariableK(sequences);
@@ -160,7 +157,7 @@ public class Main {
         List<Sequence> sequences = SequenceUtility.createSequences(data.getHmwDataset(), data.getOrderFreeScenarios());
         System.out.println("Setup: " + (System.nanoTime() - start)/1000000 + "ms");
 
-        MatrixType[] matrixTypes = new MatrixType[]{MatrixType.DTW, MatrixType.IDF_IGNORE};
+        MatrixType[] matrixTypes = new MatrixType[]{MatrixType.DTW, MatrixType.IDF};
         DecimalFormat df2 = new DecimalFormat("#.##");
         for (MatrixType mType : matrixTypes) {
             start = System.nanoTime();

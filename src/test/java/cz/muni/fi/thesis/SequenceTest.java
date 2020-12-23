@@ -49,17 +49,17 @@ public class SequenceTest {
         int index6 = shingleIds.get(new Shingle(Collections.singletonList(6)));
         int index7 = shingleIds.get(new Shingle(Collections.singletonList(7)));
 
-        double[] weights1 = seq1.toTfIdfWeights(false);
+        double[] weights1 = seq1.toTfIdfWeights();
         assertThat(weights1[index5]).isCloseTo(0.0, Offset.offset(0.001));
         assertThat(weights1[index6]).isCloseTo(3*Math.log(1.5), Offset.offset(0.001));
         assertThat(weights1[index7]).isCloseTo(0.0, Offset.offset(0.001));
 
-        double[] weights2 = seq2.toTfIdfWeights(false);
+        double[] weights2 = seq2.toTfIdfWeights();
         assertThat(weights2[index5]).isCloseTo(0.0, Offset.offset(0.001));
         assertThat(weights2[index6]).isCloseTo(2*Math.log(1.5), Offset.offset(0.001));
         assertThat(weights2[index7]).isCloseTo(2*Math.log(3.0), Offset.offset(0.001));
 
-        double[] weights3 = seq3.toTfIdfWeights(false);
+        double[] weights3 = seq3.toTfIdfWeights();
         assertThat(weights3[index5]).isCloseTo(0.0, Offset.offset(0.001));
         assertThat(weights3[index6]).isCloseTo(0.0, Offset.offset(0.001));
         assertThat(weights3[index7]).isCloseTo(0.0, Offset.offset(0.001));

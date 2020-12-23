@@ -100,7 +100,7 @@ public class OverlayedMotionWordsTest {
     public void countEachOnce_overlayJaccardTest() {
         List<int[]> rec1 = Arrays.asList(new int[]{0, 1, 2, 3, 4}, new int[]{0, 5, 20, 30, 40}, new int[]{9, 9, 9, 9, 9});
         List<int[]> rec2 = Arrays.asList(new int[]{0, 1, 5, 5, 5}, new int[]{0, 5, 5, 5, 4});
-        double value = OverlaySimilarity.overlayJaccard2(rec1, rec2, 2);
+        double value = OverlaySimilarity.overlayJaccard3(rec1, rec2, 2);
         assertThat(value).isCloseTo(0.8, Offset.offset(0.0001));
     }
 }

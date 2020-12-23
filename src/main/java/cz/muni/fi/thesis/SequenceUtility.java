@@ -21,16 +21,12 @@ public class SequenceUtility {
         return Math.log(((double) overlayData.size()) / count);
     }
 
-    private static List<Double> computeWeights(List<int[]> sequence, Map<Integer, List<int[]>> overlayData, boolean ignoreMaxIdf) {
+    private static List<Double> computeWeights(List<int[]> sequence, Map<Integer, List<int[]>> overlayData) {
         List<Double> weights = new ArrayList<>();
-        double maxIdf = Math.log(overlayData.size());
 
         for (int i = 0; i < sequence.size(); ++i) {
             int[] motionWord = sequence.get(i);
             double weight = computeWeightForMotionWord(motionWord, overlayData);
-            if (ignoreMaxIdf && (Math.abs(weight - maxIdf) < 0.001)) {
-                weight = 0.0;
-            }
             weights.add(weight);
         }
         return weights;
@@ -40,10 +36,10 @@ public class SequenceUtility {
      * This function computes weights for each MOMW in every sequence. This takes a long time
      */
     /*TODO use sets to make this more efficient*/
-    public static Map<Integer, OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> overlayData, boolean ignoreMaxIdf) {
+    public static Map<Integer, OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> overlayData) {
         Map<Integer, OverlaySequence> sequences = new HashMap<>();
         for (Map.Entry<Integer, List<int[]>> entry : overlayData.entrySet()) {
-            List<Double> weights = computeWeights(entry.getValue(), overlayData, ignoreMaxIdf);
+            List<Double> weights = computeWeights(entry.getValue(), overlayData);
             sequences.put(entry.getKey(), new OverlaySequence(entry.getValue(), weights));
         }
         return sequences;

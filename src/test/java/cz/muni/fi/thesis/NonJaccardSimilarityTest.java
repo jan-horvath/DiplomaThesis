@@ -25,7 +25,7 @@ public class NonJaccardSimilarityTest {
         motionWords.put(0, Arrays.asList(5,5,5,6,6,6));
         motionWords.put(10, Arrays.asList(7,7,6,6,5,5));
         motionWords.put(20, Arrays.asList(5,5,5,5,5));
-        motionWords.put(30, Arrays.asList(8,7,6));
+        motionWords.put(30, Arrays.asList(7,6));
 
         /*Map<Integer, List<Integer>> groundTruth = new HashMap<>();
         groundTruth.put(0, Collections.singletonList(99));
@@ -66,32 +66,32 @@ public class NonJaccardSimilarityTest {
         sequences.sort(Comparator.comparingInt(Sequence::getId));
 
         for (Sequence seq : sequences) {
-            double[] tfIdf = seq.toTfIdfWeights(true);
+            double[] tfIdf = seq.toTfIdfWeights();
             assertThat(NonJaccardSimilarity.cosineSimilarity(tfIdf, tfIdf)).isCloseTo(1.0, offset);
         }
 
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(0).toTfIdfWeights(true), sequences.get(1).toTfIdfWeights(true))).isCloseTo(0.506197, offset);
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(1).toTfIdfWeights(true), sequences.get(0).toTfIdfWeights(true))).isCloseTo(0.506197, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(0).toTfIdfWeights(), sequences.get(1).toTfIdfWeights())).isCloseTo(0.506197, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(1).toTfIdfWeights(), sequences.get(0).toTfIdfWeights())).isCloseTo(0.506197, offset);
 
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(0).toTfIdfWeights(true), sequences.get(2).toTfIdfWeights(true))).isCloseTo(0.707107, offset);
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(2).toTfIdfWeights(true), sequences.get(0).toTfIdfWeights(true))).isCloseTo(0.707107, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(0).toTfIdfWeights(), sequences.get(2).toTfIdfWeights())).isCloseTo(0.707107, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(2).toTfIdfWeights(), sequences.get(0).toTfIdfWeights())).isCloseTo(0.707107, offset);
 
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(0).toTfIdfWeights(true), sequences.get(3).toTfIdfWeights(true))).isCloseTo(0.271057, offset);
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(true), sequences.get(0).toTfIdfWeights(true))).isCloseTo(0.271057, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(0).toTfIdfWeights(), sequences.get(3).toTfIdfWeights())).isCloseTo(0.271057, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(), sequences.get(0).toTfIdfWeights())).isCloseTo(0.271057, offset);
 
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(1).toTfIdfWeights(true), sequences.get(2).toTfIdfWeights(true))).isCloseTo(0.357936, offset);
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(2).toTfIdfWeights(true), sequences.get(1).toTfIdfWeights(true))).isCloseTo(0.357936, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(1).toTfIdfWeights(), sequences.get(2).toTfIdfWeights())).isCloseTo(0.357936, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(2).toTfIdfWeights(), sequences.get(1).toTfIdfWeights())).isCloseTo(0.357936, offset);
 
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(1).toTfIdfWeights(true), sequences.get(3).toTfIdfWeights(true))).isCloseTo(0.933746, offset);
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(true), sequences.get(1).toTfIdfWeights(true))).isCloseTo(0.933746, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(1).toTfIdfWeights(), sequences.get(3).toTfIdfWeights())).isCloseTo(0.933746, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(), sequences.get(1).toTfIdfWeights())).isCloseTo(0.933746, offset);
 
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(2).toTfIdfWeights(true), sequences.get(3).toTfIdfWeights(true))).isCloseTo(0.0, offset);
-        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(true), sequences.get(2).toTfIdfWeights(true))).isCloseTo(0.0, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(2).toTfIdfWeights(), sequences.get(3).toTfIdfWeights())).isCloseTo(0.0, offset);
+        Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(), sequences.get(2).toTfIdfWeights())).isCloseTo(0.0, offset);
     }
 
     @Test
     public void twoNearestNeighboursTest() {
-        SimilarityMatrix matrix = SimilarityMatrix.createMatrix(sequences, MatrixType.TFIDF_TFIDF_IGNORE);
+        SimilarityMatrix matrix = SimilarityMatrix.createMatrix(sequences, MatrixType.TFIDF_TFIDF);
         Map<Integer, int[]> twoNN = KNN.bulkExtractKNNIndices(matrix, 2);
 
         assertThat(twoNN.get(0)[0]).isEqualTo(20);
