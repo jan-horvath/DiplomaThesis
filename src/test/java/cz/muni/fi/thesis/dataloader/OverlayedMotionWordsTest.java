@@ -1,5 +1,6 @@
-package cz.muni.fi.thesis;
+package cz.muni.fi.thesis.dataloader;
 
+import cz.muni.fi.thesis.dataloader.MoCapDataLoader;
 import cz.muni.fi.thesis.similarity.OverlaySimilarity;
 import cz.muni.fi.thesis.similarity.SimilarityMatrix;
 import org.assertj.core.data.Offset;
@@ -77,24 +78,24 @@ public class OverlayedMotionWordsTest {
         }
     }
 
-    @Test
-    public void overlayDataMultisetSimilarityCalculation() {
-        Map<Integer, List<int[]>> parsedData = new HashMap<>();
-
-        parsedData.put(1, Arrays.asList(new int[]{0,1,2,3,4}, new int[]{0,10,20,30,40}));
-        parsedData.put(2, Arrays.asList(new int[]{0,1,4,9,16}, new int[]{6,6,6,6,6}, new int[]{100,200,300,400,500}));
-        parsedData.put(3, Arrays.asList(new int[]{0,5,4,5,5}, new int[]{5,5,5,5,5}));
-
-        SimilarityMatrix oneOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 1, OverlaySimilarity.MULTISET_EQUIVALENT);
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 2, 1.0/3)).isTrue();
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 3, 1.0/2)).isTrue();
-        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
-
-        SimilarityMatrix twoOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 2, OverlaySimilarity.MULTISET_EQUIVALENT);
-        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 2, 1.0/6)).isTrue();
-        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 3, 0.0)).isTrue();
-        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
-    }
+//    @Test
+//    public void overlayDataMultisetSimilarityCalculation() {
+//        Map<Integer, List<int[]>> parsedData = new HashMap<>();
+//
+//        parsedData.put(1, Arrays.asList(new int[]{0,1,2,3,4}, new int[]{0,10,20,30,40}));
+//        parsedData.put(2, Arrays.asList(new int[]{0,1,4,9,16}, new int[]{6,6,6,6,6}, new int[]{100,200,300,400,500}));
+//        parsedData.put(3, Arrays.asList(new int[]{0,5,4,5,5}, new int[]{5,5,5,5,5}));
+//
+//        SimilarityMatrix oneOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 1, OverlaySimilarity.MULTISET_EQUIVALENT);
+//        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 2, 1.0/3)).isTrue();
+//        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(1), 3, 1.0/2)).isTrue();
+//        assertThat(containsJaccardEntry(oneOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
+//
+//        SimilarityMatrix twoOfFiveSM = SimilarityMatrix.createMatrixFromOverlayData(parsedData, 2, OverlaySimilarity.MULTISET_EQUIVALENT);
+//        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 2, 1.0/6)).isTrue();
+//        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(1), 3, 0.0)).isTrue();
+//        assertThat(containsJaccardEntry(twoOfFiveSM.getMatrix().get(2), 3, 1.0/6)).isTrue();
+//    }
 
     @Test
     public void countEachOnce_overlayJaccardTest() {

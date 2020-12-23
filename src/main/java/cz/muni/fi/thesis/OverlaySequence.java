@@ -4,6 +4,11 @@ import java.util.*;
 
 public class OverlaySequence {
 
+    /*TODO
+    ADD ID
+    ADD List<MOMW5> and keep the Map
+     */
+
     private Map<MOMW5, Double> MOMWs = new HashMap<>();
 
     public Map<MOMW5, Double> getMOMWs() {

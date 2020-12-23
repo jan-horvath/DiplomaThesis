@@ -27,19 +27,13 @@ public class NonJaccardSimilarityTest {
         motionWords.put(20, Arrays.asList(5,5,5,5,5));
         motionWords.put(30, Arrays.asList(7,6));
 
-        /*Map<Integer, List<Integer>> groundTruth = new HashMap<>();
-        groundTruth.put(0, Collections.singletonList(99));
-        groundTruth.put(10, Collections.singletonList(99));
-        groundTruth.put(20, Collections.singletonList(99));
-        groundTruth.put(30, Collections.singletonList(99));*/
-
         Map<Integer, String> scenarios = new HashMap<>();
         scenarios.put(0, "01-01");
         scenarios.put(10, "01-01");
         scenarios.put(20, "01-02");
         scenarios.put(30, "01-02");
 
-        Sequence.setUp(motionWords, 1, 1, 99, 99);
+        Sequence.setUp(motionWords, 1, 1);
         sequences = SequenceUtility.createSequences(motionWords, scenarios);
         shingleIds = Sequence.getShingleIds();
     }
@@ -89,21 +83,21 @@ public class NonJaccardSimilarityTest {
         Assertions.assertThat(NonJaccardSimilarity.cosineSimilarity(sequences.get(3).toTfIdfWeights(), sequences.get(2).toTfIdfWeights())).isCloseTo(0.0, offset);
     }
 
-    @Test
-    public void twoNearestNeighboursTest() {
-        SimilarityMatrix matrix = SimilarityMatrix.createMatrix(sequences, MatrixType.TFIDF_TFIDF);
-        Map<Integer, int[]> twoNN = KNN.bulkExtractKNNIndices(matrix, 2);
-
-        assertThat(twoNN.get(0)[0]).isEqualTo(20);
-        assertThat(twoNN.get(0)[1]).isEqualTo(10);
-
-        assertThat(twoNN.get(10)[0]).isEqualTo(30);
-        assertThat(twoNN.get(10)[1]).isEqualTo(0);
-
-        assertThat(twoNN.get(20)[0]).isEqualTo(0);
-        assertThat(twoNN.get(20)[1]).isEqualTo(10);
-
-        assertThat(twoNN.get(30)[0]).isEqualTo(10);
-        assertThat(twoNN.get(30)[1]).isEqualTo(0);
-    }
+//    @Test
+//    public void twoNearestNeighboursTest() {
+//        SimilarityMatrix matrix = SimilarityMatrix.createMatrix(sequences, MatrixType.TFIDF_TFIDF);
+//        Map<Integer, int[]> twoNN = KNN.bulkExtractKNNIndices(matrix, 2);
+//
+//        assertThat(twoNN.get(0)[0]).isEqualTo(20);
+//        assertThat(twoNN.get(0)[1]).isEqualTo(10);
+//
+//        assertThat(twoNN.get(10)[0]).isEqualTo(30);
+//        assertThat(twoNN.get(10)[1]).isEqualTo(0);
+//
+//        assertThat(twoNN.get(20)[0]).isEqualTo(0);
+//        assertThat(twoNN.get(20)[1]).isEqualTo(10);
+//
+//        assertThat(twoNN.get(30)[0]).isEqualTo(10);
+//        assertThat(twoNN.get(30)[1]).isEqualTo(0);
+//    }
 }

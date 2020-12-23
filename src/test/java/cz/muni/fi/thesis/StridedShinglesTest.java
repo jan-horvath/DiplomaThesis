@@ -35,33 +35,33 @@ public class StridedShinglesTest {
         ShingleUtility.bulkAddToMapWithStride(data, 2);
     }
 
-    @Test
-    public void jaccardOnSetsTest() {
-        Map<Integer, boolean[]> setsOfStridedShingles = ShingleUtility.createSetsOfStridedShingles(data, 2);
-        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles, false);
-        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = similarityMatrix.getMatrix();
-
-        assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(2), 2, 1.0)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(3), 3, 1.0)).isTrue();
-
-        assertThat(containsJaccardEntry(matrix.get(1), 2, 0.2)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(2), 3, 0.25)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(1), 3, 1.0/11)).isTrue();
-    }
-
-    @Test
-    public void jaccardOnMultisetsTest() {
-        Map<Integer, int[]> multisetsOfStridedShingles = ShingleUtility.createMultisetsOfStridedShingles(data, 2);
-        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromMultisets(multisetsOfStridedShingles);
-        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = similarityMatrix.getMatrix();
-
-        assertThat(containsJaccardEntry(matrix.get(1), 1, 0.5)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(2), 2, 0.5)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(3), 3, 0.5)).isTrue();
-
-        assertThat(containsJaccardEntry(matrix.get(1), 2, 1.0/6)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(2), 3, 2.0/11)).isTrue();
-        assertThat(containsJaccardEntry(matrix.get(1), 3, 1.0/13)).isTrue();
-    }
+//    @Test
+//    public void jaccardOnSetsTest() {
+//        Map<Integer, boolean[]> setsOfStridedShingles = ShingleUtility.createSetsOfStridedShingles(data, 2);
+//        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromSets(setsOfStridedShingles, false);
+//        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = similarityMatrix.getMatrix();
+//
+//        assertThat(containsJaccardEntry(matrix.get(1), 1, 1.0)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(2), 2, 1.0)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(3), 3, 1.0)).isTrue();
+//
+//        assertThat(containsJaccardEntry(matrix.get(1), 2, 0.2)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(2), 3, 0.25)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(1), 3, 1.0/11)).isTrue();
+//    }
+//
+//    @Test
+//    public void jaccardOnMultisetsTest() {
+//        Map<Integer, int[]> multisetsOfStridedShingles = ShingleUtility.createMultisetsOfStridedShingles(data, 2);
+//        SimilarityMatrix similarityMatrix = SimilarityMatrix.createMatrixFromMultisets(multisetsOfStridedShingles);
+//        Map<Integer, List<SimilarityMatrix.SimilarityEntry>> matrix = similarityMatrix.getMatrix();
+//
+//        assertThat(containsJaccardEntry(matrix.get(1), 1, 0.5)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(2), 2, 0.5)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(3), 3, 0.5)).isTrue();
+//
+//        assertThat(containsJaccardEntry(matrix.get(1), 2, 1.0/6)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(2), 3, 2.0/11)).isTrue();
+//        assertThat(containsJaccardEntry(matrix.get(1), 3, 1.0/13)).isTrue();
+//    }
 }

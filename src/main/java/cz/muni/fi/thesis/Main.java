@@ -1,5 +1,7 @@
 package cz.muni.fi.thesis;
 
+import cz.muni.fi.thesis.dataloader.MoCapData;
+import cz.muni.fi.thesis.dataloader.MoCapDataLoader;
 import cz.muni.fi.thesis.evaluation.KNN;
 import cz.muni.fi.thesis.evaluation.ScenarioKNN;
 import cz.muni.fi.thesis.similarity.MatrixType;
@@ -13,25 +15,62 @@ import java.util.*;
 /**TODO
  * comment on TF (double) vs Multiset (int)
  * add documentation
+ * document chapters
+ * rename MatrixType
  */
 
-
 public class Main {
+
+    private enum Experiment {
+        CHAPTER_4,
+        CHAPTER_5,
+        CHAPTER_6,
+        CHAPTER_7,
+        CHAPTER_8,
+        CHAPTER_9
+    }
+
+    private static Experiment experiment = Experiment.CHAPTER_4;
+
     private static final int MIN_SHINGLE = 1;
     private static final int MAX_SHINGLE = 1;
-    public static final int MIN_ACTION = 22;
-    public static final int MAX_ACTION = 152;
 
     public static void main(String[] args) throws IOException {
+
+        MoCapData data = MoCapDataLoader.loadData();
+        DecimalFormat df2 = new DecimalFormat("#.##");
+
+        switch (experiment) {
+            case CHAPTER_4: {
+                Sequence.setUp(data.getHMWs());
+                List<Sequence> sequences = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
+                Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMOMWs());
+
+                SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrix(sequences, MatrixType.DTW);
+                SequenceUtility.removeSingularEpisode(hmwMatrix, sequences);
+
+                for (int K = 1; K <= 11; ++K) {
+                    Map<Integer, int[]> motionWordsKNN;
+                    if (K == 11) {
+                        Map<Integer, Integer> variableK = ScenarioKNN.getVariableK(data.getOFScenarios());
+                        motionWordsKNN = KNN.bulkExtractVariableKNNIndices(hmwMatrix, variableK);
+                    } else {
+                        motionWordsKNN = KNN.bulkExtractKNNIndices(hmwMatrix, K);
+                    }
+                    System.out.println(df2.format(100*ScenarioKNN.evaluate(sequences, motionWordsKNN)));
+                }
+
+            }
+        }
 
         //(DTW or Jaccard) + mutlioverlay MWs (no filtering,...)
         /*long start = System.nanoTime();
         MoCapData data = MoCapDataLoader.loadData();
         System.out.println("Loading: " + (System.nanoTime() - start)/1000000 + "ms");
 
-        Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMomwDataset());
-        Sequence.setUp(data.getHmwDataset(), 1,1, MIN_ACTION, MAX_ACTION);
-        List<Sequence> sequences = SequenceUtility.createSequences(data.getHmwDataset(), data.getOrderFreeScenarios());
+        Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMOMWs());
+        Sequence.setUp(data.getHMWs());
+        List<Sequence> sequences = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
         Map<Integer, Integer> K = ScenarioKNN.getVariableK(sequences);
         System.out.println("Setup: " + (System.nanoTime() - start)/1000000 + "ms");
 
@@ -60,7 +99,7 @@ public class Main {
         }
         //------------------------
 
-        SequenceUtility.removeSparseScenarios(matrix, sequences);
+        SequenceUtility.removeSingularEpisode(matrix, sequences);
 
         for (int i = 1; i <= 11; ++i) {
             Map<Integer, int[]> finalKnn;
@@ -75,7 +114,7 @@ public class Main {
         System.out.println("Computation: " + (System.nanoTime() - start)/1000000 + "ms");*/
 
         //Filtering + DTW/Jaccard on MOMWs
-        long start;
+        /*long start;
         start = System.nanoTime();
         MoCapData data = MoCapDataLoader.loadData();
         System.out.println("Loading: " + (System.nanoTime() - start)/1000000 + "ms");
@@ -143,7 +182,7 @@ public class Main {
                 System.out.println("(M = " + MULTIPLIER + ") " + (System.nanoTime() - start) / 1000000 + "ms"
                  + " [" + ScenarioKNN.evaluate(sequences, finalKnn) + "]");
             }
-        }
+        }*/
 
         // Experiments - Hard MWs
         /*long start = System.nanoTime();

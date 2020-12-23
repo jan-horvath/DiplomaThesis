@@ -30,7 +30,7 @@ public class SequenceTest {
         scenarios.put(2, "01-01");
         scenarios.put(3, "01-01");
 
-        Sequence.setUp(motionWords, 1, 1, 99, 99);
+        Sequence.setUp(motionWords, 1, 1);
         sequences = SequenceUtility.createSequences(motionWords, scenarios);
         shingleIds = Sequence.getShingleIds();
     }

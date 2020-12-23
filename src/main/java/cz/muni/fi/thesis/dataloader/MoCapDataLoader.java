@@ -1,13 +1,11 @@
-package cz.muni.fi.thesis;
-
-import org.w3c.dom.ls.LSParserFilter;
+package cz.muni.fi.thesis.dataloader;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MoCapDataLoader {
+public class MoCapDataLoader {
 
     private static final String HMW_DATASET_PATH = System.getProperty("user.dir") + "\\MW_database\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-kmedoids350.data";
     private static final String HMW_MIXED_DATASET_PATH = System.getProperty("user.dir") + "\\MW_database\\Halfswitched\\hdm05-sequences_annotations_specific-segment80_shift16-coords_normPOS-fps12-quantized-kmedoids350-halfCategorySwitched.data";
@@ -20,12 +18,12 @@ class MoCapDataLoader {
 
     public static MoCapData loadData() throws IOException {
         MoCapData moCapData = new MoCapData();
-        moCapData.setHmwDataset(parseHmwDataFile(HMW_DATASET_PATH));
-        moCapData.setHmwMixedDataset(parseHmwDataFile(HMW_MIXED_DATASET_PATH));
-        moCapData.setMomwDataset(parseMomwDataFile(MOMW_DATASET_PATH));
-        moCapData.setMomwMixedDataset(parseMomwDataFile(MOMW_MIXED_DATASET_PATH));
-        moCapData.setOrderFreeScenarios(parseScenarioFile(ORDER_FREE_SCENARIOS_PATH, false));
-        moCapData.setOrderSensitiveScenarios(parseScenarioFile(ORDER_SENSITIVE_SCENARIOS_PATH, true));
+        moCapData.setHMWs(parseHmwDataFile(HMW_DATASET_PATH));
+        moCapData.setMixedHMWs(parseHmwDataFile(HMW_MIXED_DATASET_PATH));
+        moCapData.setMOMWs(parseMomwDataFile(MOMW_DATASET_PATH));
+        moCapData.setMixedMOMWs(parseMomwDataFile(MOMW_MIXED_DATASET_PATH));
+        moCapData.setOFScenarios(parseScenarioFile(ORDER_FREE_SCENARIOS_PATH, false));
+        moCapData.setOSScenarios(parseScenarioFile(ORDER_SENSITIVE_SCENARIOS_PATH, true));
         return moCapData;
     }
 

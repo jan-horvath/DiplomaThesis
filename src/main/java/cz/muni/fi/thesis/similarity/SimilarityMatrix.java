@@ -1,9 +1,11 @@
 package cz.muni.fi.thesis.similarity;
 
+import cz.muni.fi.thesis.OverlaySequence;
 import cz.muni.fi.thesis.Sequence;
 import cz.muni.fi.thesis.ShingleUtility;
 
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class SimilarityMatrix {
     //Maybe change to Map<Integer, Map<Integer, SimilarityEntry>>
@@ -42,89 +44,74 @@ public class SimilarityMatrix {
         }
     }
 
-    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard) {
-        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
-
-        for (Map.Entry<Integer, boolean[]> entry1 : data.entrySet()) {
-            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
-
-            for (Map.Entry<Integer, boolean[]> entry2 : data.entrySet()) {
-                double jaccardValue;
-                if (weightedJaccard) {
-                    jaccardValue = JaccardSimilarity.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), ShingleUtility.getIDF());
-                } else {
-                    jaccardValue = JaccardSimilarity.computeJaccard(entry1.getValue(), entry2.getValue());
-                }
-                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
-            }
-        }
-        return similarityMatrix;
-    }
-
-    public static SimilarityMatrix createMatrixFromMinhashes(Map<Integer, int[]> data) {
-        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
-
-        for (Map.Entry<Integer, int[]> entry1 : data.entrySet()) {
-            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
-
-            for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
-                double jaccardValue = JaccardSimilarity.computeJaccardOnMinhashes(entry1.getValue(), entry2.getValue());
-                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
-            }
-        }
-        return similarityMatrix;
-    }
-
-    public static SimilarityMatrix createMatrixFromMultisets(Map<Integer, int[]> data) {
-        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
-
-        for (Map.Entry<Integer, int[]> entry1 : data.entrySet()) {
-            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
-
-            for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
-                double jaccardValue = JaccardSimilarity.computeJaccardOnMultisets(entry1.getValue(), entry2.getValue());
-                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
-            }
-        }
-        return similarityMatrix;
-    }
-
-    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, int overlayJaccardNumber) {
-        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
-
-        for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
-            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
-            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
-
-            switch (overlayJaccardNumber) {
-                case OverlaySimilarity.SET_EQUIVALENT : {
-                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                        double value = OverlaySimilarity.overlayJaccard1(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
-                    }
-                    break;
-                }
-                case OverlaySimilarity.COUNT_EACH_ONCE : {
-                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                        double value = OverlaySimilarity.overlayJaccard3(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
-                    }
-                    break;
-                }
-                case OverlaySimilarity.MULTISET_EQUIVALENT : {
-                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
-                        double value = OverlaySimilarity.overlayJaccard2(entry1.getValue(), entry2.getValue(), matchingsRequired);
-                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
-                    }
-                    break;
-                }
-            }
-        }
-        return similarityMatrix;
-    }
+//    public static SimilarityMatrix createMatrixFromSets(Map<Integer, boolean[]> data, boolean weightedJaccard) {
+//        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
+//
+//        for (Map.Entry<Integer, boolean[]> entry1 : data.entrySet()) {
+//            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
+//            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+//
+//            for (Map.Entry<Integer, boolean[]> entry2 : data.entrySet()) {
+//                double jaccardValue;
+//                if (weightedJaccard) {
+//                    jaccardValue = JaccardSimilarity.computeWeighedJaccard(entry1.getValue(), entry2.getValue(), ShingleUtility.getIDF());
+//                } else {
+//                    jaccardValue = JaccardSimilarity.computeJaccard(entry1.getValue(), entry2.getValue());
+//                }
+//                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
+//            }
+//        }
+//        return similarityMatrix;
+//    }
+//
+//    public static SimilarityMatrix createMatrixFromMultisets(Map<Integer, int[]> data) {
+//        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
+//
+//        for (Map.Entry<Integer, int[]> entry1 : data.entrySet()) {
+//            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
+//            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+//
+//            for (Map.Entry<Integer, int[]> entry2 : data.entrySet()) {
+//                double jaccardValue = JaccardSimilarity.computeJaccardOnMultisets(entry1.getValue(), entry2.getValue());
+//                jaccardEntries.add(new SimilarityEntry(entry2.getKey(), jaccardValue));
+//            }
+//        }
+//        return similarityMatrix;
+//    }
+//
+//    public static SimilarityMatrix createMatrixFromOverlayData(Map<Integer, List<int[]>> overlayData, int matchingsRequired, int overlayJaccardNumber) {
+//        SimilarityMatrix similarityMatrix = new SimilarityMatrix();
+//
+//        for (Map.Entry<Integer, List<int[]>> entry1 : overlayData.entrySet()) {
+//            similarityMatrix.matrix.put(entry1.getKey(), new ArrayList<>());
+//            List<SimilarityEntry> jaccardEntries = similarityMatrix.matrix.get(entry1.getKey());
+//
+//            switch (overlayJaccardNumber) {
+//                case OverlaySimilarity.SET_EQUIVALENT : {
+//                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+//                        double value = OverlaySimilarity.overlayJaccard1(entry1.getValue(), entry2.getValue(), matchingsRequired);
+//                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+//                    }
+//                    break;
+//                }
+//                case OverlaySimilarity.COUNT_EACH_ONCE : {
+//                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+//                        double value = OverlaySimilarity.overlayJaccard3(entry1.getValue(), entry2.getValue(), matchingsRequired);
+//                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+//                    }
+//                    break;
+//                }
+//                case OverlaySimilarity.MULTISET_EQUIVALENT : {
+//                    for (Map.Entry<Integer, List<int[]>> entry2 : overlayData.entrySet()) {
+//                        double value = OverlaySimilarity.overlayJaccard2(entry1.getValue(), entry2.getValue(), matchingsRequired);
+//                        jaccardEntries.add(new SimilarityEntry(entry2.getKey(), value));
+//                    }
+//                    break;
+//                }
+//            }
+//        }
+//        return similarityMatrix;
+//    }
 
     public Map<Integer, List<SimilarityEntry>> getMatrix() {
         return matrix;
@@ -138,7 +125,7 @@ public class SimilarityMatrix {
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
             for (Sequence compareSequence : sequences) {
-                double similarity;
+                Double similarity;
                 switch (type) { //make this switch into a private function
                     case SET: {
                         similarity = JaccardSimilarity.computeJaccard(query.toSet(), compareSequence.toSet());
@@ -183,6 +170,32 @@ public class SimilarityMatrix {
         }
         return sm;
     }
+
+    public static SimilarityMatrix createMatrixHMW(List<Sequence> sequences, BiFunction<Sequence, Sequence, Double> simFunc) {
+        SimilarityMatrix sm = new SimilarityMatrix();
+        for (Sequence query : sequences) {
+            sm.matrix.put(query.getId(), new ArrayList<>());
+            List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
+            for (Sequence compareSequence : sequences) {
+                double similarity = simFunc.apply(query, compareSequence);
+                similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
+            }
+        }
+        return sm;
+    }
+
+    /*public static SimilarityMatrix createMatrixMOMW(List<OverlaySequence> sequences, BiFunction<OverlaySequence, OverlaySequence, Double> simFunc) {
+        SimilarityMatrix sm = new SimilarityMatrix();
+        for (OverlaySequence query : sequences) {
+            sm.matrix.put(query.getId(), new ArrayList<>());
+            List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
+            for (Sequence compareSequence : sequences) {
+                double similarity = simFunc.apply(query, compareSequence);
+                similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
+            }
+        }
+        return sm;
+    }*/
 
     @Override
     public String toString() {

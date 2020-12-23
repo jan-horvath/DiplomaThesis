@@ -63,7 +63,7 @@ public class SequenceUtility {
     /**
      * Removes scenarios "01-04" and "01-04S" (01-04 but switched), i.e. the ones that have only single sequence
      */
-    public static void removeSparseScenarios(SimilarityMatrix sm, List<Sequence> sequences) {
+    public static void removeSingularEpisode(SimilarityMatrix sm, List<Sequence> sequences) {
         for (Sequence sequence : sequences) {
             String scenario = sequence.getScenario();
             if (scenario.equals("01-04") || scenario.equals("01-04S")) {

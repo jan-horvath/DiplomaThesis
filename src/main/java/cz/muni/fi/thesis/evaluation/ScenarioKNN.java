@@ -8,6 +8,8 @@ import java.util.Map;
 
 public class ScenarioKNN {
 
+    private static String scenarioName;
+
     public static double evaluate(List<Sequence> sequences, Map<Integer, int[]> motionWordsKnn) {
         double result = 0.0;
 
@@ -48,6 +50,25 @@ public class ScenarioKNN {
 
         for (Sequence sequence : sequences) {
             variableK.put(sequence.getId(), scenarioCount.get(sequence.getScenario()));
+        }
+        return variableK;
+    }
+
+    public static Map<Integer, Integer> getVariableK(Map<Integer, String> scenarios) {
+        Map<Integer, Integer> variableK = new HashMap<>();
+        Map<String, Integer> scenarioCount = new HashMap<>();
+
+        for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
+            scenarioName = scenario.getValue();
+            if (!scenarioCount.containsKey(scenarioName)) {
+                scenarioCount.put(scenarioName, 1);
+            } else {
+                scenarioCount.put(scenarioName, scenarioCount.get(scenarioName) + 1);
+            }
+        }
+
+        for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
+            variableK.put(scenario.getKey(), scenarioCount.get(scenario.getValue()));
         }
         return variableK;
     }
