@@ -2,19 +2,19 @@ package cz.muni.fi.thesis.sequences;
 
 import java.util.*;
 
-public class OverlaySequence {
+public class MomwEpisode {
 
     private int id;
-    private List<MOMW5> motionWords;
+    private List<MOMW> sequence;
     private String scenario;
 
-    public OverlaySequence(int id, String scenario, List<int[]> motionWords, List<Double> weights) {
-        assert(motionWords.size() == weights.size());
+    public MomwEpisode(int id, String scenario, List<int[]> sequence, List<Double> weights) {
+        assert(sequence.size() == weights.size());
         this.id = id;
         this.scenario = scenario;
-        this.motionWords = new ArrayList<>();
-        for (int i = 0; i < motionWords.size(); ++i) {
-            this.motionWords.add(new MOMW5(motionWords.get(i), weights.get(i)));
+        this.sequence = new ArrayList<>();
+        for (int i = 0; i < sequence.size(); ++i) {
+            this.sequence.add(new MOMW(sequence.get(i), weights.get(i)));
         }
     }
 
@@ -22,24 +22,24 @@ public class OverlaySequence {
         return id;
     }
 
-    public List<MOMW5> getMotionWords() {
-        return motionWords;
+    public List<MOMW> getSequence() {
+        return sequence;
     }
 
     public String getScenario() {
         return scenario;
     }
 
-    public class MOMW5 {
+    public class MOMW {
         private int[] motionWord;
         double weight;
 
-        MOMW5(int[] motionWord, double weight) {
+        MOMW(int[] motionWord, double weight) {
             this.motionWord = motionWord;
             this.weight = weight;
         }
 
-        public int[] getMotionWord() {
+        public int[] getMW() {
             return motionWord;
         }
 
@@ -51,8 +51,8 @@ public class OverlaySequence {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            MOMW5 momw5 = (MOMW5) o;
-            return Arrays.equals(motionWord, momw5.motionWord);
+            MOMW momw = (MOMW) o;
+            return Arrays.equals(motionWord, momw.motionWord);
         }
 
         @Override

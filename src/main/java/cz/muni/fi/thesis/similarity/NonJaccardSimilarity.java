@@ -1,6 +1,6 @@
 package cz.muni.fi.thesis.similarity;
 
-import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.HmwEpisode;
 
 import java.util.List;
 import java.util.Map;
@@ -83,7 +83,7 @@ public class NonJaccardSimilarity {
         }
 
         double intersection = 0;
-        Map<Integer, Double> idf = Sequence.getIdf();
+        Map<Integer, Double> idf = HmwEpisode.getIdf();
 
         for (int i = 0; i < set1.length; ++i) {
             if (set1[i] && set2[i]) {

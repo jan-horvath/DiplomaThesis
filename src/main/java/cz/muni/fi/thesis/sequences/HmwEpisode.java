@@ -6,7 +6,7 @@ import cz.muni.fi.thesis.Shingle;
 
 import java.util.*;
 
-public class Sequence {
+public class HmwEpisode {
     private static int minK, maxK;
     private static BiMap<Shingle, Integer> shingleIds;
     private static Map<Integer, Double> idf;
@@ -41,15 +41,15 @@ public class Sequence {
     //--------------------------------------------Static functions------------------------------------------------------
 
     public static void setUp(Map<Integer, List<Integer>> data, int minK, int maxK) {
-        Sequence.minK = minK;
-        Sequence.maxK = maxK;
+        HmwEpisode.minK = minK;
+        HmwEpisode.maxK = maxK;
         nextId = 0;
         createShingleIds(data, minK, maxK);
         computeIdf(data, minK, maxK);
     }
 
     public static void setUp(Map<Integer, List<Integer>> data) {
-        setUp(data, 1, 1);
+        setUp(data, 2, 2);
     }
 
     private static void createShingleIds(Map<Integer, List<Integer>> data, int minK, int maxK) {
@@ -101,7 +101,7 @@ public class Sequence {
 
     //------------------------------------------Non-static functions----------------------------------------------------
 
-    public Sequence(int id, String scenario, List<Integer> motionWords) {
+    public HmwEpisode(int id, String scenario, List<Integer> motionWords) {
         this.id = id;
         this.scenario = scenario;
         this.sequence = motionWords;

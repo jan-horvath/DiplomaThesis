@@ -3,7 +3,7 @@ package cz.muni.fi.thesis;
 import static org.assertj.core.api.Assertions.*;
 
 import com.google.common.collect.BiMap;
-import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.HmwEpisode;
 import cz.muni.fi.thesis.sequences.SequenceUtility;
 import cz.muni.fi.thesis.similarity.NonJaccardSimilarity;
 import org.assertj.core.api.Assertions;
@@ -15,7 +15,7 @@ import java.util.*;
 
 public class NonJaccardSimilarityTest {
 
-    public List<Sequence> sequences;
+    public List<HmwEpisode> sequences;
     public BiMap<Shingle, Integer> shingleIds;
 
     @Before
@@ -32,9 +32,9 @@ public class NonJaccardSimilarityTest {
         scenarios.put(20, "01-02");
         scenarios.put(30, "01-02");
 
-        Sequence.setUp(motionWords, 1, 1);
+        HmwEpisode.setUp(motionWords, 1, 1);
         sequences = SequenceUtility.createSequences(motionWords, scenarios);
-        shingleIds = Sequence.getShingleIds();
+        shingleIds = HmwEpisode.getShingleIds();
     }
 
     @Test
@@ -56,9 +56,9 @@ public class NonJaccardSimilarityTest {
     @Test
     public void cosineSimilarityBetweenAllPairsTest() {
         Offset<Double> offset = Offset.offset(0.0001);
-        sequences.sort(Comparator.comparingInt(Sequence::getId));
+        sequences.sort(Comparator.comparingInt(HmwEpisode::getId));
 
-        for (Sequence seq : sequences) {
+        for (HmwEpisode seq : sequences) {
             double[] tfIdf = seq.toTfIdfWeights();
             assertThat(NonJaccardSimilarity.cosineSimilarity(tfIdf, tfIdf)).isCloseTo(1.0, offset);
         }

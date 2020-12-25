@@ -1,7 +1,7 @@
 package cz.muni.fi.thesis.similarity;
 
-import cz.muni.fi.thesis.sequences.OverlaySequence;
-import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.HmwEpisode;
+import cz.muni.fi.thesis.sequences.MomwEpisode;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -118,13 +118,13 @@ public class SimilarityMatrix {
 
 
 
-    public static SimilarityMatrix createMatrix(List<Sequence> sequences, MatrixType type) {
+    public static SimilarityMatrix createMatrix(List<HmwEpisode> sequences, MatrixType type) {
         SimilarityMatrix sm = new SimilarityMatrix();
-        for (Sequence query : sequences) {
+        for (HmwEpisode query : sequences) {
             //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
-            for (Sequence compareSequence : sequences) {
+            for (HmwEpisode compareSequence : sequences) {
                 double similarity;
                 switch (type) { //make this switch into a private function
                     case SET: {
@@ -143,7 +143,7 @@ public class SimilarityMatrix {
                         break;
                     }
                     case IDF: {
-                        //similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(), compareSequence.toSet(), Sequence.getIdf());
+                        //similarity = JaccardSimilarity.computeWeighedJaccard(query.toSet(), compareSequence.toSet(), HmwEpisode.getIdf());
                         similarity = NonJaccardSimilarity.cosineSimilarity(query.toIdfWeights(), compareSequence.toIdfWeights());
                         break;
                     }
@@ -171,17 +171,17 @@ public class SimilarityMatrix {
         return sm;
     }
 
-    public static SimilarityMatrix createMatrixMOMW(List<OverlaySequence> sequences, MatrixType type) {
+    /*public static SimilarityMatrix createMatrixMOMW(List<MomwEpisode> sequences, MatrixType type) {
         SimilarityMatrix sm = new SimilarityMatrix();
-        for (OverlaySequence query : sequences) {
+        for (MomwEpisode query : sequences) {
             //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
-            for (OverlaySequence compareSequence : sequences) {
+            for (MomwEpisode compareSequence : sequences) {
                 double similarity;
                 switch (type) { //make this switch into a private function
                     case DTW: {
-                        similarity = OverlaySimilarity.dtwSimilarity(query.getMotionWords(), compareSequence.getMotionWords(), 1);
+                        similarity = OverlaySimilarity.dtwSimilarity(query.getSequence(), compareSequence.getSequence(), 1);
                         break;
                     }
                     default: throw new IllegalStateException("This matrix type is not yet implemented!");
@@ -190,15 +190,15 @@ public class SimilarityMatrix {
             }
         }
         return sm;
-    }
+    }*/
 
-    public static SimilarityMatrix createMatrixHMW(List<Sequence> sequences, BiFunction<Sequence, Sequence, Double> simFunc) {
+    public static SimilarityMatrix createMatrixHMW(List<HmwEpisode> sequences, BiFunction<HmwEpisode, HmwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
-        for (Sequence query : sequences) {
+        for (HmwEpisode query : sequences) {
             //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
-            for (Sequence compareSequence : sequences) {
+            for (HmwEpisode compareSequence : sequences) {
                 double similarity = simFunc.apply(query, compareSequence);
                 similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
             }
@@ -206,18 +206,18 @@ public class SimilarityMatrix {
         return sm;
     }
 
-    /*public static SimilarityMatrix createMatrixMOMW(List<OverlaySequence> sequences, BiFunction<OverlaySequence, OverlaySequence, Double> simFunc) {
+    public static SimilarityMatrix createMatrixMOMW(List<MomwEpisode> sequences, BiFunction<MomwEpisode, MomwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
-        for (OverlaySequence query : sequences) {
+        for (MomwEpisode query : sequences) {
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
-            for (Sequence compareSequence : sequences) {
+            for (MomwEpisode compareSequence : sequences) {
                 double similarity = simFunc.apply(query, compareSequence);
                 similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
             }
         }
         return sm;
-    }*/
+    }
 
     @Override
     public String toString() {

@@ -53,7 +53,7 @@ public class ShingleUtility {
 
     /**
      * Adds new k-shingles to the map
-     * @param sequence Sequence of integers from which the shingles should be extracted
+     * @param sequence HmwEpisode of integers from which the shingles should be extracted
      * @param k Size of the shingles
      */
     public static void addToMap(List<Integer> sequence, int k) {

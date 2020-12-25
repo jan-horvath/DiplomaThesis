@@ -1,7 +1,7 @@
 package cz.muni.fi.thesis;
 
 import com.google.common.collect.BiMap;
-import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.HmwEpisode;
 import cz.muni.fi.thesis.sequences.SequenceUtility;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class SequenceTest {
 
-    public List<Sequence> sequences;
+    public List<HmwEpisode> sequences;
     public BiMap<Shingle, Integer> shingleIds;
 
     @Before
@@ -32,16 +32,16 @@ public class SequenceTest {
         scenarios.put(2, "01-01");
         scenarios.put(3, "01-01");
 
-        Sequence.setUp(motionWords, 1, 1);
+        HmwEpisode.setUp(motionWords, 1, 1);
         sequences = SequenceUtility.createSequences(motionWords, scenarios);
-        shingleIds = Sequence.getShingleIds();
+        shingleIds = HmwEpisode.getShingleIds();
     }
 
     @Test
     public void TFIDF_TFIDF_Test() {
-        Sequence seq1 = null, seq2 = null, seq3 = null;
+        HmwEpisode seq1 = null, seq2 = null, seq3 = null;
         for (int i = 0; i < 3; ++i) {
-            Sequence sequence = sequences.get(i);
+            HmwEpisode sequence = sequences.get(i);
             if (sequence.getId() == 1) {seq1 = sequence;}
             if (sequence.getId() == 2) {seq2 = sequence;}
             if (sequence.getId() == 3) {seq3 = sequence;}

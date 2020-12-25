@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.sequences;
 
+import cz.muni.fi.thesis.similarity.MomwSimilarity;
 import cz.muni.fi.thesis.similarity.OverlaySimilarity;
 import cz.muni.fi.thesis.similarity.SimilarityMatrix;
 
@@ -11,7 +12,7 @@ public class SequenceUtility {
         int count = 0;
         for (Map.Entry<Integer, List<int[]>> sequenceEntry : overlayData.entrySet()) {
             for (int[] otherMW : sequenceEntry.getValue()) {
-                if (OverlaySimilarity.overlayMotionWordsMatch(motionWord, otherMW, 1)) {
+                if (MomwSimilarity.overlayMotionWordsMatch(motionWord, otherMW, 1)) {
                     ++count;
                     break;
                 }
@@ -35,27 +36,27 @@ public class SequenceUtility {
     /**
      * This function computes weights for each MOMW in every sequence. This takes a long time
      */
-    /*TODO use sets to make this more efficient*/
-    public static List<OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> motionWords,
-                                                               Map<Integer, String> scenarios) {
-       List<OverlaySequence> sequences = new ArrayList<>();
+    /*TODO use sets to make this more efficient and rename this*/
+    public static List<MomwEpisode> createOverlaySequences(Map<Integer, List<int[]>> motionWords,
+                                                           Map<Integer, String> scenarios) {
+       List<MomwEpisode> sequences = new ArrayList<>();
         for (Integer seqId : motionWords.keySet()) {
             List<Double> weights = computeWeights(motionWords.get(seqId), motionWords);
-            sequences.add(new OverlaySequence(seqId, scenarios.get(seqId), motionWords.get(seqId), weights));
+            sequences.add(new MomwEpisode(seqId, scenarios.get(seqId), motionWords.get(seqId), weights));
         }
         return sequences;
     }
 
-    public static List<Sequence> createSequences(Map<Integer, List<Integer>> motionWords,
-                                                 Map<Integer, String> scenarios) {
-        List<Sequence> sequences = new ArrayList<>();
+    public static List<HmwEpisode> createSequences(Map<Integer, List<Integer>> motionWords,
+                                                   Map<Integer, String> scenarios) {
+        List<HmwEpisode> sequences = new ArrayList<>();
 
         for (Integer seqID : motionWords.keySet()) {
             assert(motionWords.containsKey(seqID));
             assert(scenarios.containsKey(seqID));
 
             String scenario = scenarios.get(seqID);
-            sequences.add(new Sequence(seqID, scenario, motionWords.get(seqID)));
+            sequences.add(new HmwEpisode(seqID, scenario, motionWords.get(seqID)));
         }
 
         return sequences;
@@ -64,8 +65,8 @@ public class SequenceUtility {
     /**
      * Removes scenarios "01-04" and "01-04S" (01-04 but switched), i.e. the ones that have only single sequence
      */
-    public static void removeSingularEpisode(SimilarityMatrix sm, List<Sequence> sequences) {
-        for (Sequence sequence : sequences) {
+    public static void removeSingularEpisode(SimilarityMatrix sm, List<HmwEpisode> sequences) {
+        for (HmwEpisode sequence : sequences) {
             String scenario = sequence.getScenario();
             if (scenario.equals("01-04") || scenario.equals("01-04S")) {
                 sm.getMatrix().remove(sequence.getId());

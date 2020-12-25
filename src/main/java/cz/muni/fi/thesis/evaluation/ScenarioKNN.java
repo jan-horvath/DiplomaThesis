@@ -1,6 +1,6 @@
 package cz.muni.fi.thesis.evaluation;
 
-import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.HmwEpisode;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,11 +10,11 @@ public class ScenarioKNN {
 
     private static String scenarioName;
 
-    public static double evaluate(List<Sequence> sequences, Map<Integer, int[]> motionWordsKnn) {
+    public static double evaluate(List<HmwEpisode> sequences, Map<Integer, int[]> motionWordsKnn) {
         double result = 0.0;
 
-        Map<Integer, Sequence> sequenceMap = new HashMap<>();
-        for (Sequence sequence : sequences) {
+        Map<Integer, HmwEpisode> sequenceMap = new HashMap<>();
+        for (HmwEpisode sequence : sequences) {
             sequenceMap.put(sequence.getId(), sequence);
         }
 
@@ -35,11 +35,11 @@ public class ScenarioKNN {
         return result/motionWordsKnn.size();
     }
 
-    public static Map<Integer, Integer> getVariableK(List<Sequence> sequences) {
+    public static Map<Integer, Integer> getVariableK(List<HmwEpisode> sequences) {
         Map<Integer, Integer> variableK = new HashMap<>();
         Map<String, Integer> scenarioCount = new HashMap<>();
 
-        for (Sequence sequence : sequences) {
+        for (HmwEpisode sequence : sequences) {
             String scenario = sequence.getScenario();
             if (!scenarioCount.containsKey(scenario)) {
                 scenarioCount.put(scenario, 1);
@@ -48,7 +48,7 @@ public class ScenarioKNN {
             }
         }
 
-        for (Sequence sequence : sequences) {
+        for (HmwEpisode sequence : sequences) {
             variableK.put(sequence.getId(), scenarioCount.get(sequence.getScenario()));
         }
         return variableK;
