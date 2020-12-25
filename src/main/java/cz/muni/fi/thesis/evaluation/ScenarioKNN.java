@@ -8,8 +8,6 @@ import java.util.Map;
 
 public class ScenarioKNN {
 
-    private static String scenarioName;
-
     public static double evaluate(List<HmwEpisode> sequences, Map<Integer, int[]> motionWordsKnn) {
         double result = 0.0;
 
@@ -59,7 +57,7 @@ public class ScenarioKNN {
         Map<String, Integer> scenarioCount = new HashMap<>();
 
         for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
-            scenarioName = scenario.getValue();
+            String scenarioName = scenario.getValue();
             if (!scenarioCount.containsKey(scenarioName)) {
                 scenarioCount.put(scenarioName, 1);
             } else {

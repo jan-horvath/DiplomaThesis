@@ -36,14 +36,41 @@ public class Main {
     }
 
     private static Experiment experiment = Experiment.CHAPTER_4;
+    private static final DecimalFormat df = new DecimalFormat("#.##");
 
-    private static final int MIN_SHINGLE = 1;
-    private static final int MAX_SHINGLE = 1;
+    private static void evaluateMatrix(SimilarityMatrix matrix, Map<Integer, Integer> variableK, Map<Integer, String> scenarios, int maxK) {
+        for (int K = 1; K <= maxK+1; ++K) {
+            Map<Integer, int[]> motionWordsKNN;
+            if (K == maxK+1) {
+                motionWordsKNN = KNN.bulkExtractVariableKNNIndices(matrix, variableK);
+            } else {
+                motionWordsKNN = KNN.bulkExtractKNNIndices(matrix, K);
+            }
+            System.out.println(df.format(100*evaluate(scenarios, motionWordsKNN)));
+        }
+    }
+
+    public static double evaluate(Map<Integer, String> scenarios, Map<Integer, int[]> motionWordsKnn) {
+        double result = 0.0;
+
+        for (Map.Entry<Integer, int[]> entry : motionWordsKnn.entrySet()) {
+            Integer queryId = entry.getKey();
+            int sequencesWithMatchingScenario = 0;
+            for (int compareSequenceId : entry.getValue()) {
+                if (scenarios.get(queryId).equals(scenarios.get(compareSequenceId))) {
+                    sequencesWithMatchingScenario += 1.0;
+                }
+            }
+
+            int K = entry.getValue().length;
+            result += ((double) sequencesWithMatchingScenario)/K;
+        }
+        return result/motionWordsKnn.size();
+    }
 
     public static void main(String[] args) throws IOException {
 
         MoCapData data = MoCapDataLoader.loadData();
-        DecimalFormat df2 = new DecimalFormat("#.##");
 
         switch (experiment) {
             case CHAPTER_4: {
@@ -54,30 +81,15 @@ public class Main {
                 SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrixHMW(sequences, HmwShingleSimilarity::dtwSimilarity);
                 SequenceUtility.removeSingularEpisode(hmwMatrix, sequences);
 
-                for (int K = 1; K <= 11; ++K) {
-                    Map<Integer, int[]> motionWordsKNN;
-                    if (K == 11) {
-                        Map<Integer, Integer> variableK = ScenarioKNN.getVariableK(data.getOFScenarios());
-                        motionWordsKNN = KNN.bulkExtractVariableKNNIndices(hmwMatrix, variableK);
-                    } else {
-                        motionWordsKNN = KNN.bulkExtractKNNIndices(hmwMatrix, K);
-                    }
-                    System.out.println(df2.format(100*ScenarioKNN.evaluate(sequences, motionWordsKNN)));
-                }
+                evaluateMatrix(hmwMatrix, data.getOFVariableK(), data.getOFScenarios(), 10);
 
                 SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::dtwSimilarity);
                 SequenceUtility.removeSingularEpisode(momwMatrix, sequences);
 
-                for (int K = 1; K <= 11; ++K) {
-                    Map<Integer, int[]> motionWordsKNN;
-                    if (K == 11) {
-                        Map<Integer, Integer> variableK = ScenarioKNN.getVariableK(data.getOFScenarios());
-                        motionWordsKNN = KNN.bulkExtractVariableKNNIndices(momwMatrix, variableK);
-                    } else {
-                        motionWordsKNN = KNN.bulkExtractKNNIndices(momwMatrix, K);
-                    }
-                    System.out.println(df2.format(100*ScenarioKNN.evaluate(sequences, motionWordsKNN)));
-                }
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), 10);
+            }
+            case CHAPTER_5: {
+
             }
         }
 

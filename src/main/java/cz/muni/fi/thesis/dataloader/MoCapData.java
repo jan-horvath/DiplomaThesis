@@ -11,6 +11,8 @@ public class MoCapData {
     private Map<Integer, List<int[]>> mixedMOMWs;
     private Map<Integer, String> OFScenarios;
     private Map<Integer, String> OSScenarios;
+    private Map<Integer, Integer> OFVariableK;
+    private Map<Integer, Integer> OSVariableK;
 
     public Map<Integer, List<Integer>> getHMWs() {
         return HMWs;
@@ -58,5 +60,21 @@ public class MoCapData {
 
     public void setOSScenarios(Map<Integer, String> OSScenarios) {
         this.OSScenarios = OSScenarios;
+    }
+
+    public Map<Integer, Integer> getOFVariableK() {
+        return OFVariableK;
+    }
+
+    public void setOFVariableK(Map<Integer, Integer> OFVariableK) {
+        this.OFVariableK = OFVariableK;
+    }
+
+    public Map<Integer, Integer> getOSVariableK() {
+        return OSVariableK;
+    }
+
+    public void setOSVariableK(Map<Integer, Integer> OSVariableK) {
+        this.OSVariableK = OSVariableK;
     }
 }

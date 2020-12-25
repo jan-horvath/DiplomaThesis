@@ -22,8 +22,15 @@ public class MoCapDataLoader {
         moCapData.setMixedHMWs(parseHmwDataFile(HMW_MIXED_DATASET_PATH));
         moCapData.setMOMWs(parseMomwDataFile(MOMW_DATASET_PATH));
         moCapData.setMixedMOMWs(parseMomwDataFile(MOMW_MIXED_DATASET_PATH));
-        moCapData.setOFScenarios(parseScenarioFile(ORDER_FREE_SCENARIOS_PATH, false));
-        moCapData.setOSScenarios(parseScenarioFile(ORDER_SENSITIVE_SCENARIOS_PATH, true));
+
+        Map<Integer, String> OFScenarios = parseScenarioFile(ORDER_FREE_SCENARIOS_PATH, false);
+        moCapData.setOFScenarios(OFScenarios);
+        moCapData.setOFVariableK(computeVariableK(OFScenarios));
+
+        Map<Integer, String> OSScenarios = parseScenarioFile(ORDER_SENSITIVE_SCENARIOS_PATH, true);
+        moCapData.setOSScenarios(OSScenarios);
+        moCapData.setOSVariableK(computeVariableK(OSScenarios));
+
         return moCapData;
     }
 
@@ -174,5 +181,24 @@ public class MoCapDataLoader {
             matcher.find();
         }
         return numbers;
+    }
+
+    public static Map<Integer, Integer> computeVariableK(Map<Integer, String> scenarios) {
+        Map<Integer, Integer> variableK = new HashMap<>();
+        Map<String, Integer> scenarioCount = new HashMap<>();
+
+        for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
+            String scenarioName = scenario.getValue();
+            if (!scenarioCount.containsKey(scenarioName)) {
+                scenarioCount.put(scenarioName, 1);
+            } else {
+                scenarioCount.put(scenarioName, scenarioCount.get(scenarioName) + 1);
+            }
+        }
+
+        for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
+            variableK.put(scenario.getKey(), scenarioCount.get(scenario.getValue()));
+        }
+        return variableK;
     }
 }
