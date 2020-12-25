@@ -1,8 +1,7 @@
 package cz.muni.fi.thesis.similarity;
 
-import cz.muni.fi.thesis.OverlaySequence;
-import cz.muni.fi.thesis.Sequence;
-import cz.muni.fi.thesis.ShingleUtility;
+import cz.muni.fi.thesis.sequences.OverlaySequence;
+import cz.muni.fi.thesis.sequences.Sequence;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -122,10 +121,11 @@ public class SimilarityMatrix {
     public static SimilarityMatrix createMatrix(List<Sequence> sequences, MatrixType type) {
         SimilarityMatrix sm = new SimilarityMatrix();
         for (Sequence query : sequences) {
+            //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
             for (Sequence compareSequence : sequences) {
-                Double similarity;
+                double similarity;
                 switch (type) { //make this switch into a private function
                     case SET: {
                         similarity = JaccardSimilarity.computeJaccard(query.toSet(), compareSequence.toSet());
@@ -171,9 +171,31 @@ public class SimilarityMatrix {
         return sm;
     }
 
+    public static SimilarityMatrix createMatrixMOMW(List<OverlaySequence> sequences, MatrixType type) {
+        SimilarityMatrix sm = new SimilarityMatrix();
+        for (OverlaySequence query : sequences) {
+            //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
+            sm.matrix.put(query.getId(), new ArrayList<>());
+            List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
+            for (OverlaySequence compareSequence : sequences) {
+                double similarity;
+                switch (type) { //make this switch into a private function
+                    case DTW: {
+                        similarity = OverlaySimilarity.dtwSimilarity(query.getMotionWords(), compareSequence.getMotionWords(), 1);
+                        break;
+                    }
+                    default: throw new IllegalStateException("This matrix type is not yet implemented!");
+                }
+                similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
+            }
+        }
+        return sm;
+    }
+
     public static SimilarityMatrix createMatrixHMW(List<Sequence> sequences, BiFunction<Sequence, Sequence, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
         for (Sequence query : sequences) {
+            //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
             for (Sequence compareSequence : sequences) {

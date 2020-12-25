@@ -1,7 +1,8 @@
-package cz.muni.fi.thesis;
+package cz.muni.fi.thesis.sequences;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import cz.muni.fi.thesis.Shingle;
 
 import java.util.*;
 

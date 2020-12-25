@@ -1,6 +1,6 @@
 package cz.muni.fi.thesis.evaluation;
 
-import cz.muni.fi.thesis.Sequence;
+import cz.muni.fi.thesis.sequences.Sequence;
 
 import java.util.HashMap;
 import java.util.List;

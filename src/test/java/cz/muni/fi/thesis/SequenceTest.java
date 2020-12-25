@@ -1,6 +1,8 @@
 package cz.muni.fi.thesis;
 
 import com.google.common.collect.BiMap;
+import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.SequenceUtility;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;

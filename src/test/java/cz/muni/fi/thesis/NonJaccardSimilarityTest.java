@@ -3,10 +3,9 @@ package cz.muni.fi.thesis;
 import static org.assertj.core.api.Assertions.*;
 
 import com.google.common.collect.BiMap;
-import cz.muni.fi.thesis.evaluation.KNN;
+import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.SequenceUtility;
 import cz.muni.fi.thesis.similarity.NonJaccardSimilarity;
-import cz.muni.fi.thesis.similarity.MatrixType;
-import cz.muni.fi.thesis.similarity.SimilarityMatrix;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
 import org.junit.Before;

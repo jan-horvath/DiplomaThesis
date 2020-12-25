@@ -1,4 +1,4 @@
-package cz.muni.fi.thesis;
+package cz.muni.fi.thesis.sequences;
 
 import cz.muni.fi.thesis.similarity.OverlaySimilarity;
 import cz.muni.fi.thesis.similarity.SimilarityMatrix;
@@ -36,11 +36,12 @@ public class SequenceUtility {
      * This function computes weights for each MOMW in every sequence. This takes a long time
      */
     /*TODO use sets to make this more efficient*/
-    public static Map<Integer, OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> overlayData) {
-        Map<Integer, OverlaySequence> sequences = new HashMap<>();
-        for (Map.Entry<Integer, List<int[]>> entry : overlayData.entrySet()) {
-            List<Double> weights = computeWeights(entry.getValue(), overlayData);
-            sequences.put(entry.getKey(), new OverlaySequence(entry.getValue(), weights));
+    public static List<OverlaySequence> createOverlaySequences(Map<Integer, List<int[]>> motionWords,
+                                                               Map<Integer, String> scenarios) {
+       List<OverlaySequence> sequences = new ArrayList<>();
+        for (Integer seqId : motionWords.keySet()) {
+            List<Double> weights = computeWeights(motionWords.get(seqId), motionWords);
+            sequences.add(new OverlaySequence(seqId, scenarios.get(seqId), motionWords.get(seqId), weights));
         }
         return sequences;
     }

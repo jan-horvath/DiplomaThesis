@@ -4,8 +4,10 @@ import cz.muni.fi.thesis.dataloader.MoCapData;
 import cz.muni.fi.thesis.dataloader.MoCapDataLoader;
 import cz.muni.fi.thesis.evaluation.KNN;
 import cz.muni.fi.thesis.evaluation.ScenarioKNN;
+import cz.muni.fi.thesis.sequences.OverlaySequence;
+import cz.muni.fi.thesis.sequences.Sequence;
+import cz.muni.fi.thesis.sequences.SequenceUtility;
 import cz.muni.fi.thesis.similarity.MatrixType;
-import cz.muni.fi.thesis.similarity.OverlaySimilarity;
 import cz.muni.fi.thesis.similarity.SimilarityMatrix;
 
 import java.io.*;
@@ -44,18 +46,21 @@ public class Main {
             case CHAPTER_4: {
                 Sequence.setUp(data.getHMWs());
                 List<Sequence> sequences = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
-                Map<Integer, OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMOMWs());
+                List<OverlaySequence> overlaySequences = SequenceUtility.createOverlaySequences(data.getMOMWs(), data.getOFScenarios());
 
                 SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrix(sequences, MatrixType.DTW);
                 SequenceUtility.removeSingularEpisode(hmwMatrix, sequences);
+
+                SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(overlaySequences, MatrixType.DTW);
+                SequenceUtility.removeSingularEpisode(momwMatrix, sequences);
 
                 for (int K = 1; K <= 11; ++K) {
                     Map<Integer, int[]> motionWordsKNN;
                     if (K == 11) {
                         Map<Integer, Integer> variableK = ScenarioKNN.getVariableK(data.getOFScenarios());
-                        motionWordsKNN = KNN.bulkExtractVariableKNNIndices(hmwMatrix, variableK);
+                        motionWordsKNN = KNN.bulkExtractVariableKNNIndices(momwMatrix, variableK);
                     } else {
-                        motionWordsKNN = KNN.bulkExtractKNNIndices(hmwMatrix, K);
+                        motionWordsKNN = KNN.bulkExtractKNNIndices(momwMatrix, K);
                     }
                     System.out.println(df2.format(100*ScenarioKNN.evaluate(sequences, motionWordsKNN)));
                 }

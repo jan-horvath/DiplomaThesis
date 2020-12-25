@@ -1,6 +1,6 @@
 package cz.muni.fi.thesis.similarity;
 
-import cz.muni.fi.thesis.Sequence;
+import cz.muni.fi.thesis.sequences.Sequence;
 
 import java.util.List;
 import java.util.Map;
