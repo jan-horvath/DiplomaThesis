@@ -3,10 +3,13 @@ package cz.muni.fi.thesis.similarity;
 import cz.muni.fi.thesis.sequences.HmwEpisode;
 
 import java.util.List;
+import java.util.Map;
 
 public class HmwShingleSimilarity {
 
-    public static double dtwSimilarity(HmwEpisode episode1, HmwEpisode episode2) {
+    //TODO code duplicity issue
+
+    public static double DTW(HmwEpisode episode1, HmwEpisode episode2) {
         List<Integer> seq1 = episode1.getSequence();
         List<Integer> seq2 = episode2.getSequence();
         int N = seq1.size();
@@ -35,7 +38,135 @@ public class HmwShingleSimilarity {
         return 1.0 - accumMatrix[N-1][M-1];
     }
 
-//    public static double dtwSimilarity(List<Integer> seq1, List<Integer> seq2) {
-//        return 1 - dtwDistance(seq1, seq2);
-//    }
+    public static double jaccardOnSet(HmwEpisode episode1, HmwEpisode episode2) {
+        boolean[] set1 = episode1.toSet();
+        boolean[] set2 = episode2.toSet();
+        if (set1.length != set2.length) {
+            throw new IllegalArgumentException("Input arrays for JaccardSimilarity coefficient have different sizes.");
+        }
+
+        int intersection = 0;
+        int union = 0;
+
+        for (int i = 0; i < set1.length; ++i) {
+            if ((set1[i]) || (set2[i])) {
+                ++union;
+                if (set1[i] == set2[i]) {
+                    ++intersection;
+                }
+            }
+        }
+        return ((double) intersection)/union;
+    }
+
+    public static double jaccardOnBag(HmwEpisode episode1, HmwEpisode episode2) {
+        int[] bag1 = episode1.toBag();
+        int[] bag2 = episode2.toBag();
+        if (bag1.length != bag2.length) {
+            throw new IllegalArgumentException("Input arrays for JaccardSimilarity coefficient have different sizes.");
+        }
+
+        int intersection = 0;
+        int union = 0;
+        for (int i = 0; i < bag1.length; ++i) {
+            union += bag1[i] + bag2[i];
+            intersection += Math.min(bag1[i], bag2[i]);
+        }
+        return ((double) intersection)/union;
+    }
+
+    public static double jaccardOnIdf(HmwEpisode episode1, HmwEpisode episode2) {
+        boolean[] set1 = episode1.toSet();
+        boolean[] set2 = episode2.toSet();
+        Map<Integer, Double> idf = HmwEpisode.getIdf();
+        double intersection = 0.0;
+        double union = 0.0;
+
+        for (int i = 0; i < set1.length; ++i) {
+            if ((set1[i]) || (set2[i])) {
+                union += idf.get(i);
+                if (set1[i] == set2[i]) {
+                    intersection += idf.get(i);
+                }
+            }
+        }
+
+        return  intersection/union;
+    }
+
+    public static double cosineOnSet(HmwEpisode episode1, HmwEpisode episode2) {
+        boolean[] set1 = episode1.toSet();
+        boolean[] set2 = episode2.toSet();
+        if (set1.length != set2.length) {
+            throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes.");
+        }
+
+        int intersection = 0;
+        int vec1Magnitude = 0;
+        int vec2Magnitude = 0;
+        for (int i = 0; i < set1.length; ++i) {
+            vec1Magnitude += set1[i] ? 1 : 0;
+            vec2Magnitude += set2[i] ? 1 : 0;
+            intersection += (set1[i] && set2[i]) ? 1 : 0;
+        }
+        return ((double) intersection)/Math.sqrt(vec1Magnitude * vec2Magnitude);
+    }
+
+    public static double cosineOnBag(HmwEpisode episode1, HmwEpisode episode2) {
+        int[] bag1 = episode1.toBag();
+        int[] bag2 = episode2.toBag();
+        if (bag1.length != bag2.length) {
+            throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes");
+        }
+
+        int vec1Magnitude = 0;
+        int vec2Magnitude = 0;
+        int dotProduct = 0;
+
+        for (int i = 0; i < bag1.length; ++i) {
+            dotProduct += bag1[i] * bag2[i];
+            vec1Magnitude += bag1[i] * bag1[i];
+            vec2Magnitude += bag2[i] * bag2[i];
+        }
+        return ((double) dotProduct) / Math.sqrt(vec1Magnitude * vec2Magnitude);
+    }
+
+    public static double cosineOnIdf(HmwEpisode episode1, HmwEpisode episode2) {
+        double[] vec1 = episode1.toIdfWeights();
+        double[] vec2 = episode2.toIdfWeights();
+        if (vec1.length != vec2.length) {
+            throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes");
+        }
+
+        double vec1Magnitude = 0.0;
+        double vec2Magnitude = 0.0;
+        double dotProduct = 0.0;
+
+        for (int i = 0; i < vec1.length; ++i) {
+            dotProduct += vec1[i] * vec2[i];
+            vec1Magnitude += vec1[i] * vec1[i];
+            vec2Magnitude += vec2[i] * vec2[i];
+        }
+        return dotProduct / Math.sqrt(vec1Magnitude * vec2Magnitude);
+    }
+
+    public static double cosineOnTfIdf(HmwEpisode episode1, HmwEpisode episode2) {
+        double[] vec1 = episode1.toTfIdfWeights();
+        double[] vec2 = episode2.toTfIdfWeights();
+        if (vec1.length != vec2.length) {
+            throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes");
+        }
+
+        double vec1Magnitude = 0.0;
+        double vec2Magnitude = 0.0;
+        double dotProduct = 0.0;
+
+        for (int i = 0; i < vec1.length; ++i) {
+            dotProduct += vec1[i] * vec2[i];
+            vec1Magnitude += vec1[i] * vec1[i];
+            vec2Magnitude += vec2[i] * vec2[i];
+        }
+        return dotProduct / Math.sqrt(vec1Magnitude * vec2Magnitude);
+    }
+
 }

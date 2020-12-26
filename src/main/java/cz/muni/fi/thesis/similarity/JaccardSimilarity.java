@@ -69,30 +69,6 @@ public class JaccardSimilarity {
     }
 
     /**
-     * computeJaccardOnMinhashes computes JaccardSimilarity coefficient on minhashes. The sets are represented by integer arrays.
-     * set[i] = k means, that the index of the first item contained in the set according to permutation i is k
-     * @param set1 first set
-     * @param set2 second set
-     * @return JaccardSimilarity coefficient for minhashes. The value is increased for each i such that set1[i] == set2[i].
-     * Result is in range (0,1)
-     */
-    public static double computeJaccardOnMinhashes(int[] set1, int[] set2) {
-        if (set1.length != set2.length) {
-            throw new IllegalArgumentException("Input arrays for JaccardSimilarity coefficient have different sizes.");
-        }
-
-        int intersection = 0;
-        int union = set1.length;
-
-        for (int i = 0; i < set1.length; ++i) {
-            if (set1[i] == set2[i]) {
-                ++intersection;
-            }
-        }
-        return ((double) intersection)/union;
-    }
-
-    /**
      * computeJaccardOnMultisets computes JaccardSimilarity coefficient on multisets. The sets are represented by integer arrays.
      * set[i] = k means, that the i-th element is present k times in the set.
      * @param set1 first set

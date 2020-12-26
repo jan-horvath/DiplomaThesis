@@ -13,8 +13,10 @@ import cz.muni.fi.thesis.similarity.MomwSimilarity;
 import cz.muni.fi.thesis.similarity.SimilarityMatrix;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.BiFunction;
 
 /**TODO
  * comment on TF (double) vs Multiset (int)
@@ -22,6 +24,7 @@ import java.util.*;
  * document Experiment enum
  * replace MatrixType with similarity functions
  * remove asserts
+ * make output of evaluation nicer
  */
 
 public class Main {
@@ -35,8 +38,11 @@ public class Main {
         CHAPTER_9
     }
 
-    private static Experiment experiment = Experiment.CHAPTER_4;
+    private static Experiment experiment = Experiment.CHAPTER_5;
+
     private static final DecimalFormat df = new DecimalFormat("#.##");
+    private static final int OF_K = 10;
+    private static final int OS_K = 5;
 
     private static void evaluateMatrix(SimilarityMatrix matrix, Map<Integer, Integer> variableK, Map<Integer, String> scenarios, int maxK) {
         for (int K = 1; K <= maxK+1; ++K) {
@@ -75,21 +81,35 @@ public class Main {
         switch (experiment) {
             case CHAPTER_4: {
                 HmwEpisode.setUp(data.getHMWs());
-                List<HmwEpisode> sequences = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
+                List<HmwEpisode> hmwEpisodes = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
                 List<MomwEpisode> momwEpisodes = SequenceUtility.createOverlaySequences(data.getMOMWs(), data.getOFScenarios());
 
-                SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrixHMW(sequences, HmwShingleSimilarity::dtwSimilarity);
-                SequenceUtility.removeSingularEpisode(hmwMatrix, sequences);
-
-                evaluateMatrix(hmwMatrix, data.getOFVariableK(), data.getOFScenarios(), 10);
+                SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::DTW);
+                evaluateMatrix(hmwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
 
                 SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::dtwSimilarity);
-                SequenceUtility.removeSingularEpisode(momwMatrix, sequences);
-
-                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), 10);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
             }
             case CHAPTER_5: {
+                HmwEpisode.setUp(data.getHMWs());
+                List<HmwEpisode> hmwEpisodes = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
 
+                List<BiFunction<HmwEpisode, HmwEpisode, Double>> similarityFunctions = Arrays.asList(
+                        HmwShingleSimilarity::jaccardOnSet,
+                        HmwShingleSimilarity::cosineOnSet,
+                        HmwShingleSimilarity::jaccardOnBag,
+                        HmwShingleSimilarity::cosineOnBag,
+                        HmwShingleSimilarity::jaccardOnIdf,
+                        HmwShingleSimilarity::cosineOnIdf,
+                        HmwShingleSimilarity::cosineOnTfIdf);
+                List<String> functionNames = Arrays.asList("Jaccard on set", "Cosine on set", "Jaccard on bag",
+                        "Cosine on bag", "Jaccard on IDF", "Cosine on IDF", "Cosine on TFIDF");
+
+                for (int i = 0; i < functionNames.size(); ++i) {
+                    System.out.println(functionNames.get(i));
+                    SimilarityMatrix matrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, similarityFunctions.get(i));
+                    evaluateMatrix(matrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                }
             }
         }
 
@@ -215,42 +235,42 @@ public class Main {
         }*/
 
         // Experiments - Hard MWs
-        /*long start = System.nanoTime();
-        MoCapData data = MoCapDataLoader.loadData();
-        System.out.println("Data loading: " + (System.nanoTime() - start)/1000000 + "ms");
-
-        start = System.nanoTime();
-        int minK = 1;
-        int maxK = 1;
-        HmwEpisode.setUp(data.getHmwDataset(), minK, maxK, MIN_ACTION, MAX_ACTION);
-        List<HmwEpisode> sequences = SequenceUtility.createSequences(data.getHmwDataset(), data.getOrderFreeScenarios());
-        System.out.println("Setup: " + (System.nanoTime() - start)/1000000 + "ms");
-
-        MatrixType[] matrixTypes = new MatrixType[]{MatrixType.DTW, MatrixType.IDF};
-        DecimalFormat df2 = new DecimalFormat("#.##");
-        for (MatrixType mType : matrixTypes) {
-            start = System.nanoTime();
-
-            System.out.println();
-            System.out.println(mType);
-            System.out.println("Shingle size: " + minK + " - " + maxK);
-
-            SimilarityMatrix matrix = SimilarityMatrix.createMatrix(sequences, mType);
-            SequenceUtility.removeSparseScenarios(matrix, sequences);
-            System.out.println("Distance computation between all pairs (matrix creation): " + (System.nanoTime() - start)/1000000 + "ms");
-
-            start = System.nanoTime();
-            for (int K = 1; K <= 11; ++K) {
-                Map<Integer, int[]> motionWordsKNN;
-                if (K == 11) {
-                    Map<Integer, Integer> variableK = ScenarioKNN.getVariableK(sequences);
-                    motionWordsKNN = KNN.bulkExtractVariableKNNIndices(matrix, variableK);
-                } else {
-                    motionWordsKNN = KNN.bulkExtractKNNIndices(matrix, K);
-                }
-                System.out.println(df2.format(100*ScenarioKNN.evaluate(sequences, motionWordsKNN)));
-            }
-            System.out.println("Evaluation for all k = {1,...,10,k*}: " + (System.nanoTime() - start)/1000000 + "ms");
-        }*/
+//        long start = System.nanoTime();
+//        data = MoCapDataLoader.loadData();
+//        System.out.println("Data loading: " + (System.nanoTime() - start)/1000000 + "ms");
+//
+//        start = System.nanoTime();
+//        int minK = 1;
+//        int maxK = 1;
+//        HmwEpisode.setUp(data.getHMWs());
+//        List<HmwEpisode> sequences = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
+//        System.out.println("Setup: " + (System.nanoTime() - start)/1000000 + "ms");
+//
+//        MatrixType[] matrixTypes = new MatrixType[]{MatrixType.SET};
+//        DecimalFormat df2 = new DecimalFormat("#.##");
+//        for (MatrixType mType : matrixTypes) {
+//            start = System.nanoTime();
+//
+//            System.out.println();
+//            System.out.println(mType);
+//            System.out.println("Shingle size: " + minK + " - " + maxK);
+//
+//            SimilarityMatrix matrix = SimilarityMatrix.createMatrix(sequences, mType);
+//            SequenceUtility.removeSingularEpisode(matrix, sequences);
+//            System.out.println("Distance computation between all pairs (matrix creation): " + (System.nanoTime() - start)/1000000 + "ms");
+//
+//            start = System.nanoTime();
+//            for (int K = 1; K <= 11; ++K) {
+//                Map<Integer, int[]> motionWordsKNN;
+//                if (K == 11) {
+//                    Map<Integer, Integer> variableK = data.getOFVariableK();
+//                    motionWordsKNN = KNN.bulkExtractVariableKNNIndices(matrix, variableK);
+//                } else {
+//                    motionWordsKNN = KNN.bulkExtractKNNIndices(matrix, K);
+//                }
+//                System.out.println(df2.format(100* ScenarioKNN.evaluate(sequences, motionWordsKNN)));
+//            }
+//            System.out.println("Evaluation for all k = {1,...,10,k*}: " + (System.nanoTime() - start)/1000000 + "ms");
+//        }
     }
 }

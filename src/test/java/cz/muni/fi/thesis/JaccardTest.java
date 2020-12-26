@@ -92,36 +92,6 @@ public class JaccardTest {
         return new int[]{1,2,3};
     }
 
-    @Test
-    public void computeJaccardOnDifferentSizedMinhashesTest() {
-        int[] minhash1 = buildMinhash11111();
-        int[] minhash2 = buildSmallerMinhash();
-
-        expectedException.expect(IllegalArgumentException.class);
-        JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2);
-    }
-
-    @Test
-    public void computeJaccardOnEqualMinhashesTest() {
-        int[] minhash1 = buildMinhash11111();
-        int[] minhash2 = buildMinhash11111();
-        assertThat(JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(1.0, Offset.offset(0.001));
-    }
-
-    @Test
-    public void computeJaccardOnSimilarMinhashesTest() {
-        int[] minhash1 = buildMinhash11111();
-        int[] minhash2 = buildMinhash01210();
-        assertThat(JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(0.4, Offset.offset(0.001));
-    }
-
-    @Test
-    public void computeJaccardOnNonSimilarMinhashesTest() {
-        int[] minhash1 = buildMinhash11111();
-        int[] minhash2 = buildMinhash22222();
-        assertThat(JaccardSimilarity.computeJaccardOnMinhashes(minhash1, minhash2)).isCloseTo(0.0, Offset.offset(0.001));
-    }
-
     //JaccardSimilarity on multisets
     private int[] buildMultiset01234() {
         return new int[]{0,1,2,3,4};

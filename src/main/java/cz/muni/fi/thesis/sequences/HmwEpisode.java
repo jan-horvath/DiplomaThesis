@@ -33,7 +33,7 @@ public class HmwEpisode {
     }
 
     private boolean[] set;
-    private int[] multiset;
+    private int[] bag;
     private double[] tfidf;
     private double[] tf;
 
@@ -49,7 +49,7 @@ public class HmwEpisode {
     }
 
     public static void setUp(Map<Integer, List<Integer>> data) {
-        setUp(data, 2, 2);
+        setUp(data, 1, 1);
     }
 
     private static void createShingleIds(Map<Integer, List<Integer>> data, int minK, int maxK) {
@@ -139,14 +139,14 @@ public class HmwEpisode {
         return set;
     }
 
-    public int[] toMultiset() {
-       if (multiset == null) {
-            multiset = new int[term_frequency.size()];
+    public int[] toBag() {
+       if (bag == null) {
+            bag = new int[term_frequency.size()];
             for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                multiset[entry.getKey()] = entry.getValue();
+                bag[entry.getKey()] = entry.getValue();
             }
         }
-        return multiset;
+        return bag;
     }
 
     public double[] toTfWeights() {

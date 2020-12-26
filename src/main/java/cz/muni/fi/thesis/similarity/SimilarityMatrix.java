@@ -128,12 +128,13 @@ public class SimilarityMatrix {
                 double similarity;
                 switch (type) { //make this switch into a private function
                     case SET: {
+                        //System.out.println(query.getId() + "   " + compareSequence.getId());
                         similarity = JaccardSimilarity.computeJaccard(query.toSet(), compareSequence.toSet());
                         //similarity = NonJaccardSimilarity.cosineSimilarity(query.toSet(), compareSequence.toSet());
                         break;
                     }
                     case MULTISET: {
-                        similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toMultiset(), compareSequence.toMultiset());
+                        similarity = JaccardSimilarity.computeJaccardOnMultisets(query.toBag(), compareSequence.toBag());
                         //similarity = NonJaccardSimilarity.cosineSimilarity(query.toMultiset(), compareSequence.toMultiset());
                         break;
                     }
@@ -195,7 +196,9 @@ public class SimilarityMatrix {
     public static SimilarityMatrix createMatrixHMW(List<HmwEpisode> sequences, BiFunction<HmwEpisode, HmwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
         for (HmwEpisode query : sequences) {
-            //TODO skip singular episode here (if sequence.getscenario == "Scenario Name" then continue)
+            if (query.getScenario().equals("01-04") || query.getScenario().equals("01-04S")) {
+                continue;
+            }
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
             for (HmwEpisode compareSequence : sequences) {
@@ -209,6 +212,9 @@ public class SimilarityMatrix {
     public static SimilarityMatrix createMatrixMOMW(List<MomwEpisode> sequences, BiFunction<MomwEpisode, MomwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
         for (MomwEpisode query : sequences) {
+            if (query.getScenario().equals("01-04") || query.getScenario().equals("01-04S")) {
+                continue;
+            }
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
             for (MomwEpisode compareSequence : sequences) {
