@@ -197,7 +197,7 @@ public class MoCapDataLoader {
         }
 
         for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
-            variableK.put(scenario.getKey(), scenarioCount.get(scenario.getValue()));
+            variableK.put(scenario.getKey(), (int) (scenarioCount.get(scenario.getValue())));
         }
         return variableK;
     }

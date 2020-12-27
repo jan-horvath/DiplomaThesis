@@ -1,7 +1,6 @@
 package cz.muni.fi.thesis.sequences;
 
 import cz.muni.fi.thesis.similarity.MomwSimilarity;
-import cz.muni.fi.thesis.similarity.OverlaySimilarity;
 import cz.muni.fi.thesis.similarity.SimilarityMatrix;
 
 import java.util.*;
@@ -37,14 +36,25 @@ public class SequenceUtility {
      * This function computes weights for each MOMW in every sequence. This takes a long time
      */
     /*TODO use sets to make this more efficient and rename this*/
-    public static List<MomwEpisode> createOverlaySequences(Map<Integer, List<int[]>> motionWords,
-                                                           Map<Integer, String> scenarios) {
+    public static List<MomwEpisode> createMomwEpisodes(Map<Integer, List<int[]>> motionWords,
+                                                       Map<Integer, String> scenarios) {
        List<MomwEpisode> sequences = new ArrayList<>();
         for (Integer seqId : motionWords.keySet()) {
             List<Double> weights = computeWeights(motionWords.get(seqId), motionWords);
             sequences.add(new MomwEpisode(seqId, scenarios.get(seqId), motionWords.get(seqId), weights));
         }
         return sequences;
+    }
+
+    public static Map<Integer, MomwEpisode> createMomwEpisodesAsMap(Map<Integer, List<int[]>> motionWords,
+                                                                    Map<Integer, String> scenarios) {
+        List<MomwEpisode> momwEpisodes = createMomwEpisodes(motionWords, scenarios);
+        Map<Integer, MomwEpisode> map = new HashMap<>();
+
+        for (MomwEpisode episode : momwEpisodes) {
+            map.put(episode.getId(), episode);
+        }
+        return map;
     }
 
     public static List<HmwEpisode> createSequences(Map<Integer, List<Integer>> motionWords,

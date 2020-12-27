@@ -24,6 +24,17 @@ public class OverlaySimilarity {
         return matchingsFound >= matchingsRequired;
     }
 
+    public static boolean overlayMotionWordsMatch(int[] MOMW1, int[] MOMW2, int matchingsRequired) {
+        assert(MOMW1.length == MOMW2.length);
+        int matchingsFound = 0;
+        for (int i = 0; i < MOMW1.length; ++i) {
+            if (MOMW1[i] == MOMW2[i]) {
+                ++matchingsFound;
+            }
+        }
+        return matchingsFound >= matchingsRequired;
+    }
+
     /**
      * Jaccard inspired weighted similarity for MOMWs (based on the non-weighed vesion 3)
      */

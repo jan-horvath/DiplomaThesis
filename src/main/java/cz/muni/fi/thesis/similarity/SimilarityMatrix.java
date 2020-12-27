@@ -225,6 +225,25 @@ public class SimilarityMatrix {
         return sm;
     }
 
+    public static SimilarityMatrix refineMatrix(
+            Map<Integer, int[]> filteredEpisodes,
+            Map<Integer, MomwEpisode> momwEpisodes,
+            BiFunction<MomwEpisode, MomwEpisode, Double> simFunc) {
+        SimilarityMatrix refinedMatrix = new SimilarityMatrix();
+
+        for (Map.Entry<Integer, int[]> entry : filteredEpisodes.entrySet()) {
+            List<SimilarityMatrix.SimilarityEntry> similarityEntries = new ArrayList<>();
+            MomwEpisode queryEpisode = momwEpisodes.get(entry.getKey());
+            for (int id : entry.getValue()) {
+                double similarity = simFunc.apply(queryEpisode, momwEpisodes.get(id));
+                //double similarity = OverlaySimilarity.weighedOverlayJaccard3(queryEpisode, overlaySequences.get(id), 1);
+                similarityEntries.add(new SimilarityMatrix.SimilarityEntry(id, similarity));
+            }
+            refinedMatrix.getMatrix().put(entry.getKey(), similarityEntries);
+        }
+        return refinedMatrix;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

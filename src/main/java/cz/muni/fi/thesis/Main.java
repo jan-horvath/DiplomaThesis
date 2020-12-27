@@ -3,17 +3,12 @@ package cz.muni.fi.thesis;
 import cz.muni.fi.thesis.dataloader.MoCapData;
 import cz.muni.fi.thesis.dataloader.MoCapDataLoader;
 import cz.muni.fi.thesis.evaluation.KNN;
-import cz.muni.fi.thesis.evaluation.ScenarioKNN;
 import cz.muni.fi.thesis.sequences.MomwEpisode;
 import cz.muni.fi.thesis.sequences.HmwEpisode;
 import cz.muni.fi.thesis.sequences.SequenceUtility;
-import cz.muni.fi.thesis.similarity.HmwShingleSimilarity;
-import cz.muni.fi.thesis.similarity.MatrixType;
-import cz.muni.fi.thesis.similarity.MomwSimilarity;
-import cz.muni.fi.thesis.similarity.SimilarityMatrix;
+import cz.muni.fi.thesis.similarity.*;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -25,6 +20,7 @@ import java.util.function.BiFunction;
  * replace MatrixType with similarity functions
  * remove asserts
  * make output of evaluation nicer
+ * naming in SimilarityMatrix and Entries
  */
 
 public class Main {
@@ -38,11 +34,12 @@ public class Main {
         CHAPTER_9
     }
 
-    private static Experiment experiment = Experiment.CHAPTER_5;
+    private static Experiment experiment = Experiment.CHAPTER_8;
 
     private static final DecimalFormat df = new DecimalFormat("#.##");
     private static final int OF_K = 10;
     private static final int OS_K = 5;
+    private static final int REFINE_K = 0;
 
     private static void evaluateMatrix(SimilarityMatrix matrix, Map<Integer, Integer> variableK, Map<Integer, String> scenarios, int maxK) {
         for (int K = 1; K <= maxK+1; ++K) {
@@ -82,7 +79,7 @@ public class Main {
             case CHAPTER_4: {
                 HmwEpisode.setUp(data.getHMWs());
                 List<HmwEpisode> hmwEpisodes = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
-                List<MomwEpisode> momwEpisodes = SequenceUtility.createOverlaySequences(data.getMOMWs(), data.getOFScenarios());
+                List<MomwEpisode> momwEpisodes = SequenceUtility.createMomwEpisodes(data.getMOMWs(), data.getOFScenarios());
 
                 SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::DTW);
                 evaluateMatrix(hmwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
@@ -111,11 +108,45 @@ public class Main {
                     evaluateMatrix(matrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
                 }
             }
+            case CHAPTER_6: {
+                List<MomwEpisode> momwEpisodes = SequenceUtility.createMomwEpisodes(data.getMOMWs(), data.getOFScenarios());
+
+                SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardNoWeights);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+
+                momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnIdf);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+            }
+            case CHAPTER_8: {
+                //Order-free
+                HmwEpisode.setUp(data.getHMWs());
+                List<HmwEpisode> hmwEpisodes = SequenceUtility.createSequences(data.getMixedHMWs(), data.getOFScenarios());
+                Map<Integer, MomwEpisode> momwEpisodesAsMap = SequenceUtility.createMomwEpisodesAsMap(data.getMixedMOMWs(), data.getOFScenarios());
+                SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::cosineOnIdf);
+
+                for (double f = 1.0; f < 4.1; f += 0.5) {
+                    Map<Integer, int[]> filteredEpisodes = KNN.bulkExtractVariableKNNIndices(hmwMatrix, data.getOFVariableKForFiltering(f));
+                    SimilarityMatrix momwMatrix = SimilarityMatrix.refineMatrix(filteredEpisodes, momwEpisodesAsMap, MomwSimilarity::jaccardOnIdf);
+                    evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), REFINE_K);
+                }
+
+                //Order-sensitive
+                HmwEpisode.setUp(data.getMixedHMWs());
+                hmwEpisodes = SequenceUtility.createSequences(data.getMixedHMWs(), data.getOSScenarios());
+                momwEpisodesAsMap = SequenceUtility.createMomwEpisodesAsMap(data.getMixedMOMWs(), data.getOSScenarios());
+                hmwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::cosineOnIdf);
+
+                for (double f = 1.0; f < 4.1; f += 0.5) {
+                    Map<Integer, int[]> filteredEpisodes = KNN.bulkExtractVariableKNNIndices(hmwMatrix, data.getOSVariableKForFiltering(f));
+                    SimilarityMatrix momwMatrix = SimilarityMatrix.refineMatrix(filteredEpisodes, momwEpisodesAsMap, MomwSimilarity::dtwSimilarity);
+                    evaluateMatrix(momwMatrix, data.getOSVariableK(), data.getOSScenarios(), REFINE_K);
+                }
+            }
         }
 
         //(DTW or Jaccard) + mutlioverlay MWs (no filtering,...)
         /*long start = System.nanoTime();
-        MoCapData data = MoCapDataLoader.loadData();
+        data = MoCapDataLoader.loadData();
         System.out.println("Loading: " + (System.nanoTime() - start)/1000000 + "ms");
 
         Map<Integer, MomwEpisode> overlaySequences = SequenceUtility.createOverlaySequences(data.getMOMWs());

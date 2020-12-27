@@ -6,6 +6,7 @@ public class MomwEpisode {
 
     private int id;
     private List<MOMW> sequence;
+    private Set<MOMW> set;
     private String scenario;
 
     public MomwEpisode(int id, String scenario, List<int[]> sequence, List<Double> weights) {
@@ -13,8 +14,11 @@ public class MomwEpisode {
         this.id = id;
         this.scenario = scenario;
         this.sequence = new ArrayList<>();
+        this.set = new HashSet<>();
         for (int i = 0; i < sequence.size(); ++i) {
-            this.sequence.add(new MOMW(sequence.get(i), weights.get(i)));
+            MOMW momw = new MOMW(sequence.get(i), weights.get(i));
+            this.sequence.add(momw);
+            this.set.add(momw);
         }
     }
 
@@ -24,6 +28,10 @@ public class MomwEpisode {
 
     public List<MOMW> getSequence() {
         return sequence;
+    }
+
+    public Set<MOMW> getSet() {
+        return set;
     }
 
     public String getScenario() {

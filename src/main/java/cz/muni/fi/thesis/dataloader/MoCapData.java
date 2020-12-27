@@ -1,5 +1,6 @@
 package cz.muni.fi.thesis.dataloader;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,23 @@ public class MoCapData {
     private Map<Integer, Integer> OFVariableK;
     private Map<Integer, Integer> OSVariableK;
 
+    public Map<Integer, Integer> getOSVariableKForFiltering(double filteringFactor) {
+        return getVariableK(OSVariableK, filteringFactor);
+    }
+
+    public Map<Integer, Integer> getOFVariableKForFiltering(double filteringFactor) {
+        return getVariableK(OFVariableK, filteringFactor);
+    }
+
+    private Map<Integer, Integer> getVariableK(Map<Integer, Integer> variableK, double filteringFactor) {
+        Map<Integer, Integer> varKForFiltering = new HashMap<>();
+        for (Map.Entry<Integer, Integer> entry : variableK.entrySet()) {
+            varKForFiltering.put(entry.getKey(), (int) (entry.getValue() * filteringFactor));
+        }
+        return varKForFiltering;
+    }
+
+    // GET & SET METHODS
     public Map<Integer, List<Integer>> getHMWs() {
         return HMWs;
     }
