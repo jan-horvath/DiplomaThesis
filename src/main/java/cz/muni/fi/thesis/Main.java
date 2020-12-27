@@ -21,6 +21,7 @@ import java.util.function.BiFunction;
  * remove asserts
  * make output of evaluation nicer
  * naming in SimilarityMatrix and Entries
+ * rename sequences to episodes everywhere
  */
 
 public class Main {
@@ -34,7 +35,7 @@ public class Main {
         CHAPTER_9
     }
 
-    private static Experiment experiment = Experiment.CHAPTER_7;
+    private static Experiment experiment = Experiment.CHAPTER_9;
 
     private static final DecimalFormat df = new DecimalFormat("#.##");
     private static final int OF_K = 10;
@@ -189,7 +190,16 @@ public class Main {
                 }
                 break;
             }
-            
+            case CHAPTER_9: {
+                for (int K = 1; K <= 5; ++K) {
+                    HmwEpisode.setUp(data.getHMWs(), K, K);
+                    List<HmwEpisode> hmwEpisodes = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
+                    SimilarityMatrix shingleIdfMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::cosineOnIdf);
+                    System.out.println(K + "-shingles:");
+                    evaluateMatrix(shingleIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                }
+                break;
+            }
         }
 
         //(DTW or Jaccard) + mutlioverlay MWs (no filtering,...)
