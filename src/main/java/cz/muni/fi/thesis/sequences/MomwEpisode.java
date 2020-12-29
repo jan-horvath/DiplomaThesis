@@ -40,19 +40,19 @@ public class MomwEpisode {
 
     public class MOMW {
         private int[] motionWord;
-        double weight;
+        double IDF;
 
-        MOMW(int[] motionWord, double weight) {
+        MOMW(int[] motionWord, double IDF) {
             this.motionWord = motionWord;
-            this.weight = weight;
+            this.IDF = IDF;
         }
 
         public int[] getMW() {
             return motionWord;
         }
 
-        public double getWeight() {
-            return weight;
+        public double getIDF() {
+            return IDF;
         }
 
         @Override
