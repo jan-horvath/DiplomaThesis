@@ -16,11 +16,10 @@ import java.util.function.BiFunction;
 /**TODO
  * comment on TF (double) vs Multiset (int)
  * add documentation
- * replace MatrixType with similarity functions
  * remove asserts
- * make output of evaluation nicer
  * naming in SimilarityMatrix and Entries
  * rename sequences to episodes everywhere
+ * remove comment in main
  */
 
 public class Main {
@@ -40,12 +39,17 @@ public class Main {
 
     private static Experiment experiment = Experiment.CHAPTER_4;
 
-    private static final DecimalFormat df = new DecimalFormat("#.##");
+    private static final DecimalFormat df = new DecimalFormat("0.00");
     private static final int OF_K = 10;
     private static final int OS_K = 5;
     private static final int REFINE_K = 0;
 
     private static void evaluateMatrix(SimilarityMatrix matrix, Map<Integer, Integer> variableK, Map<Integer, String> scenarios, int maxK) {
+        System.out.print("K   = ");
+        for (int K = 1; K <= maxK; ++K) {
+            System.out.print("   " + K + "   ");
+        }
+        System.out.print("   k*\nAcc = ");
         for (int K = 1; K <= maxK+1; ++K) {
             Map<Integer, int[]> motionWordsKNN;
             if (K == maxK+1) {
@@ -53,13 +57,15 @@ public class Main {
             } else {
                 motionWordsKNN = KNN.bulkExtractKNNIndices(matrix, K);
             }
-            System.out.println(df.format(100*evaluate(scenarios, motionWordsKNN)));
+            System.out.print(" " + df.format(100*evaluate(scenarios, motionWordsKNN)) + " ");
         }
     }
 
     private static void evaluateMatrix(SimilarityMatrix matrix, Map<Integer, Integer> variableK, Map<Integer, String> scenarios, int maxK, String string) {
         System.out.println(string);
         evaluateMatrix(matrix, variableK, scenarios, maxK);
+        System.out.println();
+        System.out.println();
     }
 
     public static double evaluate(Map<Integer, String> scenarios, Map<Integer, int[]> motionWordsKnn) {
@@ -90,10 +96,10 @@ public class Main {
                 List<MomwEpisode> momwEpisodes = SequenceUtility.createMomwEpisodes(data.getMOMWs(), data.getOFScenarios());
 
                 SimilarityMatrix hmwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::DTW);
-                evaluateMatrix(hmwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(hmwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "HMW + DTW");
 
                 SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::dtwSimilarity);
-                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW + DTW");
                 break;
             }
             case CHAPTER_5: {
@@ -112,25 +118,24 @@ public class Main {
                         "Cosine on bag", "Jaccard on IDF", "Cosine on IDF", "Cosine on TFIDF");
 
                 for (int i = 0; i < functionNames.size(); ++i) {
-                    System.out.println(functionNames.get(i));
                     SimilarityMatrix matrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, similarityFunctions.get(i));
-                    evaluateMatrix(matrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                    evaluateMatrix(matrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, functionNames.get(i));
                 }
                 break;
             }
             case CHAPTER_6: {
                 List<MomwEpisode> momwEpisodes = SequenceUtility.createMomwEpisodes(data.getMOMWs(), data.getOFScenarios());
                 SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnSets);
-                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW");
 
                 momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnTF);
-                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW + TF");
 
                 momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnIdf);
-                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW + IDF");
 
                 momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnTfIdf);
-                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW + TFIDF");
                 break;
             }
             case CHAPTER_7: {
@@ -140,32 +145,32 @@ public class Main {
                 List<MomwEpisode> momwEpisodes = SequenceUtility.createMomwEpisodes(data.getMixedMOMWs(), data.getOFScenarios());
 
                 SimilarityMatrix hmwDtwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::DTW);
-                evaluateMatrix(hmwDtwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(hmwDtwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "Order-free, HMW + DTW");
 
                 SimilarityMatrix hmwIdfMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::cosineOnIdf);
-                evaluateMatrix(hmwIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(hmwIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "Order-free, HMW + IDF");
 
                 SimilarityMatrix momwDtwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::dtwSimilarity);
-                evaluateMatrix(momwDtwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwDtwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "Order-free, MOMW + DTW");
 
                 SimilarityMatrix momwIdfMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnIdf);
-                evaluateMatrix(momwIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                evaluateMatrix(momwIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "Order-free, MOMW + IDF");
 
                 //Order-sensitive
                 hmwEpisodes = SequenceUtility.createSequences(data.getMixedHMWs(), data.getOSScenarios());
                 momwEpisodes = SequenceUtility.createMomwEpisodes(data.getMixedMOMWs(), data.getOSScenarios());
 
                 hmwDtwMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::DTW);
-                evaluateMatrix(hmwDtwMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K);
+                evaluateMatrix(hmwDtwMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K, "Order-sensitive, HMW + DTW");
 
                 hmwIdfMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::cosineOnIdf);
-                evaluateMatrix(hmwIdfMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K);
+                evaluateMatrix(hmwIdfMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K, "Order-sensitive, HMW + IDF");
 
                 momwDtwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::dtwSimilarity);
-                evaluateMatrix(momwDtwMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K);
+                evaluateMatrix(momwDtwMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K, "Order-sensitive, MOMW + DTW");
 
                 momwIdfMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnIdf);
-                evaluateMatrix(momwIdfMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K);
+                evaluateMatrix(momwIdfMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K, "Order-sensitive, MOMW + IDF");
                 break;
             }
             case CHAPTER_8: {
@@ -178,7 +183,7 @@ public class Main {
                 for (double f = 1.0; f < 4.1; f += 0.5) {
                     Map<Integer, int[]> filteredEpisodes = KNN.bulkExtractVariableKNNIndices(hmwMatrix, data.getOFVariableKForFiltering(f));
                     SimilarityMatrix momwMatrix = SimilarityMatrix.refineMatrix(filteredEpisodes, momwEpisodesAsMap, MomwSimilarity::jaccardOnIdf);
-                    evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), REFINE_K);
+                    evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), REFINE_K, "Order-free two phase model, f = " + df.format(f));
                 }
 
                 //Order-sensitive
@@ -191,7 +196,7 @@ public class Main {
                 for (double f = 1.0; f < 4.1; f += 0.5) {
                     Map<Integer, int[]> filteredEpisodes = KNN.bulkExtractVariableKNNIndices(hmwMatrix, data.getOSVariableKForFiltering(f));
                     SimilarityMatrix momwMatrix = SimilarityMatrix.refineMatrix(filteredEpisodes, momwEpisodesAsMap, MomwSimilarity::dtwSimilarity);
-                    evaluateMatrix(momwMatrix, data.getOSVariableK(), data.getOSScenarios(), REFINE_K);
+                    evaluateMatrix(momwMatrix, data.getOSVariableK(), data.getOSScenarios(), REFINE_K, "Order-sensitive two phase model, f = " + df.format(f));
                 }
                 break;
             }
@@ -200,7 +205,7 @@ public class Main {
                     HmwEpisode.setUp(data.getHMWs(), K, K);
                     List<HmwEpisode> hmwEpisodes = SequenceUtility.createSequences(data.getHMWs(), data.getOFScenarios());
                     SimilarityMatrix shingleIdfMatrix = SimilarityMatrix.createMatrixHMW(hmwEpisodes, HmwShingleSimilarity::cosineOnIdf);
-                    evaluateMatrix(shingleIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K);
+                    evaluateMatrix(shingleIdfMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, K + "-shingles + IDF");
                 }
                 break;
             }
