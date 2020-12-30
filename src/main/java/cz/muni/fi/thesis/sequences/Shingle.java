@@ -1,4 +1,4 @@
-package cz.muni.fi.thesis;
+package cz.muni.fi.thesis.sequences;
 
 import java.util.List;
 import java.util.Objects;
@@ -8,14 +8,6 @@ public final class Shingle {
 
     public Shingle(List<Integer> shingle) {
         this.shingle = shingle;
-    }
-
-    public List<Integer> getShingle() {
-        return shingle;
-    }
-
-    public int getSize() {
-        return shingle.size();
     }
 
     @Override

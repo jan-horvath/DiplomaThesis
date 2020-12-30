@@ -16,7 +16,6 @@ import java.util.function.BiFunction;
 /**TODO
  * comment on TF (double) vs Multiset (int)
  * add documentation
- * document Experiment enum
  * replace MatrixType with similarity functions
  * remove asserts
  * make output of evaluation nicer
@@ -26,6 +25,10 @@ import java.util.function.BiFunction;
 
 public class Main {
 
+    /**
+     * The Experiment enum refers to experiments from individual chapters of the thesis Information Retrieval Techniques
+     * for 3D Human Motion Data
+     */
     private enum Experiment {
         CHAPTER_4,
         CHAPTER_5,
@@ -35,7 +38,7 @@ public class Main {
         CHAPTER_9
     }
 
-    private static Experiment experiment = Experiment.CHAPTER_5;
+    private static Experiment experiment = Experiment.CHAPTER_4;
 
     private static final DecimalFormat df = new DecimalFormat("#.##");
     private static final int OF_K = 10;

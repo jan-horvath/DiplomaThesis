@@ -11,17 +11,6 @@ public class MomwSimilarity {
 
     //TODO consider moving this to some utility class and rename it
     private static boolean overlayMotionWordsMatch(MomwEpisode.MOMW momw1, MomwEpisode.MOMW momw2, int matchingsRequired) {
-        /*int[] mw1 = momw1.getMW();
-        int[] mw2 = momw2.getMW();
-        assert(mw1.length == mw2.length);
-
-        int matchingsFound = 0;
-        for (int i = 0; i < mw1.length; ++i) {
-            if (mw1[i] == mw2[i]) {
-                ++matchingsFound;
-            }
-        }
-        return matchingsFound >= matchingsRequired;*/
         return overlayMotionWordsMatch(momw1.getMW(), momw2.getMW(), matchingsRequired);
     }
 

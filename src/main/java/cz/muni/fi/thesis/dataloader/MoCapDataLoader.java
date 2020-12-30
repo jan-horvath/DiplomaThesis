@@ -34,10 +34,7 @@ public class MoCapDataLoader {
         return moCapData;
     }
 
-
     static private Pattern numberPattern = Pattern.compile("\\d+");
-
-
 
     /**
      * This function expects the data to contain individual MoCap recording represented by hard motion words.
