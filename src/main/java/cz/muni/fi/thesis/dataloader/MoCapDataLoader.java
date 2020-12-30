@@ -48,15 +48,12 @@ public class MoCapDataLoader {
      * @param filename - filename
      * @return map, which assigns a list of motionwords (including duplicates) to every sequenceId
      * @throws IOException for non existing file
-     *
-     * Access level: package private for testing
      */
-    static Map<Integer, List<Integer>> parseHmwDataFile(String filename) throws IOException {
+    private static Map<Integer, List<Integer>> parseHmwDataFile(String filename) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
         Map<Integer, List<Integer>> motions = new HashMap<>();
 
         String line;
-        //Pattern sequenceIdPattern = Pattern.compile("ObjectKey (\\d+?)_");
         Pattern sequenceIdPattern = Pattern.compile("[ -](\\d+?)_");
         Pattern motionWordsCountPattern = Pattern.compile("^(\\d+?);");
 
@@ -93,10 +90,8 @@ public class MoCapDataLoader {
      * @param filename - filename
      * @return map, which assigns a list of motionwords (including duplicates) to every sequenceId
      * @throws IOException for non existing file
-     *
-     * Access level: package private for testing
      */
-    static Map<Integer, List<int[]>> parseMomwDataFile(String filename) throws IOException {
+    private static Map<Integer, List<int[]>> parseMomwDataFile(String filename) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
         Map<Integer, List<int[]>> motions = new HashMap<>();
 
@@ -180,7 +175,7 @@ public class MoCapDataLoader {
         return numbers;
     }
 
-    public static Map<Integer, Integer> computeVariableK(Map<Integer, String> scenarios) {
+    private static Map<Integer, Integer> computeVariableK(Map<Integer, String> scenarios) {
         Map<Integer, Integer> variableK = new HashMap<>();
         Map<String, Integer> scenarioCount = new HashMap<>();
 
@@ -194,7 +189,7 @@ public class MoCapDataLoader {
         }
 
         for (Map.Entry<Integer, String> scenario : scenarios.entrySet()) {
-            variableK.put(scenario.getKey(), (int) (scenarioCount.get(scenario.getValue())));
+            variableK.put(scenario.getKey(), scenarioCount.get(scenario.getValue()));
         }
         return variableK;
     }

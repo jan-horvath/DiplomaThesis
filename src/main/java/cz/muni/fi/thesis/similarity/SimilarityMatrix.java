@@ -1,7 +1,7 @@
 package cz.muni.fi.thesis.similarity;
 
-import cz.muni.fi.thesis.sequences.HmwEpisode;
-import cz.muni.fi.thesis.sequences.MomwEpisode;
+import cz.muni.fi.thesis.episode.HmwEpisode;
+import cz.muni.fi.thesis.episode.MomwEpisode;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -10,12 +10,12 @@ public class SimilarityMatrix {
     private Map<Integer, List<SimilarityEntry>> matrix = new HashMap<>();
 
     public static class SimilarityEntry implements Comparable<SimilarityEntry> {
-        public final int recordID;
-        public final double jaccardValue;
+        final int recordID;
+        final double similarityValue;
 
-        public SimilarityEntry(int recordID, double jaccardValue) {
+        SimilarityEntry(int recordID, double similarityValue) {
             this.recordID = recordID;
-            this.jaccardValue = jaccardValue;
+            this.similarityValue = similarityValue;
         }
 
         @Override
@@ -23,56 +23,56 @@ public class SimilarityMatrix {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             SimilarityEntry entry = (SimilarityEntry) o;
-            return Double.compare(entry.jaccardValue, jaccardValue) == 0;
+            return Double.compare(entry.similarityValue, similarityValue) == 0;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(jaccardValue);
+            return Objects.hash(similarityValue);
         }
 
         @Override
         public int compareTo(SimilarityEntry o) {
-            return Double.compare(jaccardValue, o.jaccardValue);
+            return Double.compare(similarityValue, o.similarityValue);
         }
 
         @Override
         public String toString() {
-            return "(" + recordID + ", " + jaccardValue + ")";
+            return "(" + recordID + ", " + similarityValue + ")";
         }
     }
 
-    public Map<Integer, List<SimilarityEntry>> getMatrix() {
+    Map<Integer, List<SimilarityEntry>> getMatrix() {
         return matrix;
     }
 
-    public static SimilarityMatrix createMatrixHMW(List<HmwEpisode> sequences, BiFunction<HmwEpisode, HmwEpisode, Double> simFunc) {
+    public static SimilarityMatrix createMatrixHMW(List<HmwEpisode> episodes, BiFunction<HmwEpisode, HmwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
-        for (HmwEpisode query : sequences) {
+        for (HmwEpisode query : episodes) {
             if (query.getScenario().equals("01-04") || query.getScenario().equals("01-04S")) {
                 continue;
             }
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
-            for (HmwEpisode compareSequence : sequences) {
-                double similarity = simFunc.apply(query, compareSequence);
-                similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
+            for (HmwEpisode compareEpisode : episodes) {
+                double similarity = simFunc.apply(query, compareEpisode);
+                similarityEntries.add(new SimilarityEntry(compareEpisode.getId(), similarity));
             }
         }
         return sm;
     }
 
-    public static SimilarityMatrix createMatrixMOMW(List<MomwEpisode> sequences, BiFunction<MomwEpisode, MomwEpisode, Double> simFunc) {
+    public static SimilarityMatrix createMatrixMOMW(List<MomwEpisode> episodes, BiFunction<MomwEpisode, MomwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
-        for (MomwEpisode query : sequences) {
+        for (MomwEpisode query : episodes) {
             if (query.getScenario().equals("01-04") || query.getScenario().equals("01-04S")) {
                 continue;
             }
             sm.matrix.put(query.getId(), new ArrayList<>());
             List<SimilarityEntry> similarityEntries = sm.matrix.get(query.getId());
-            for (MomwEpisode compareSequence : sequences) {
-                double similarity = simFunc.apply(query, compareSequence);
-                similarityEntries.add(new SimilarityEntry(compareSequence.getId(), similarity));
+            for (MomwEpisode compareEpisode : episodes) {
+                double similarity = simFunc.apply(query, compareEpisode);
+                similarityEntries.add(new SimilarityEntry(compareEpisode.getId(), similarity));
             }
         }
         return sm;

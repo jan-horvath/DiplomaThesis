@@ -1,6 +1,4 @@
-package cz.muni.fi.thesis.evaluation;
-
-import cz.muni.fi.thesis.similarity.SimilarityMatrix;
+package cz.muni.fi.thesis.similarity;
 
 import java.util.*;
 

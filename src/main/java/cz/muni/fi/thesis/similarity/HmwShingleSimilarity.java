@@ -1,17 +1,15 @@
 package cz.muni.fi.thesis.similarity;
 
-import cz.muni.fi.thesis.sequences.HmwEpisode;
+import cz.muni.fi.thesis.episode.HmwEpisode;
 
 import java.util.List;
 import java.util.Map;
 
 public class HmwShingleSimilarity {
 
-    //TODO code duplicity issue
-
     public static double DTW(HmwEpisode episode1, HmwEpisode episode2) {
-        List<Integer> seq1 = episode1.getSequence();
-        List<Integer> seq2 = episode2.getSequence();
+        List<Integer> seq1 = episode1.getHmwSequence();
+        List<Integer> seq2 = episode2.getHmwSequence();
         int N = seq1.size();
         int M = seq2.size();
         double[][] accumMatrix = new double[N][M];
@@ -60,8 +58,8 @@ public class HmwShingleSimilarity {
     }
 
     public static double jaccardOnBag(HmwEpisode episode1, HmwEpisode episode2) {
-        int[] bag1 = episode1.toBag();
-        int[] bag2 = episode2.toBag();
+        double[] bag1 = episode1.toBag();
+        double[] bag2 = episode2.toBag();
         if (bag1.length != bag2.length) {
             throw new IllegalArgumentException("Input arrays for JaccardSimilarity coefficient have different sizes.");
         }
@@ -113,46 +111,24 @@ public class HmwShingleSimilarity {
     }
 
     public static double cosineOnBag(HmwEpisode episode1, HmwEpisode episode2) {
-        int[] bag1 = episode1.toBag();
-        int[] bag2 = episode2.toBag();
-        if (bag1.length != bag2.length) {
-            throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes");
-        }
-
-        int vec1Magnitude = 0;
-        int vec2Magnitude = 0;
-        int dotProduct = 0;
-
-        for (int i = 0; i < bag1.length; ++i) {
-            dotProduct += bag1[i] * bag2[i];
-            vec1Magnitude += bag1[i] * bag1[i];
-            vec2Magnitude += bag2[i] * bag2[i];
-        }
-        return ((double) dotProduct) / Math.sqrt(vec1Magnitude * vec2Magnitude);
+        double[] vec1 = episode1.toBag();
+        double[] vec2 = episode2.toBag();
+        return cosine(vec1, vec2);
     }
 
     public static double cosineOnIdf(HmwEpisode episode1, HmwEpisode episode2) {
         double[] vec1 = episode1.toIdfWeights();
         double[] vec2 = episode2.toIdfWeights();
-        if (vec1.length != vec2.length) {
-            throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes");
-        }
-
-        double vec1Magnitude = 0.0;
-        double vec2Magnitude = 0.0;
-        double dotProduct = 0.0;
-
-        for (int i = 0; i < vec1.length; ++i) {
-            dotProduct += vec1[i] * vec2[i];
-            vec1Magnitude += vec1[i] * vec1[i];
-            vec2Magnitude += vec2[i] * vec2[i];
-        }
-        return dotProduct / Math.sqrt(vec1Magnitude * vec2Magnitude);
+        return cosine(vec1, vec2);
     }
 
     public static double cosineOnTfIdf(HmwEpisode episode1, HmwEpisode episode2) {
         double[] vec1 = episode1.toTfIdfWeights();
         double[] vec2 = episode2.toTfIdfWeights();
+        return cosine(vec1, vec2);
+    }
+
+    private static double cosine(double[] vec1, double[] vec2) {
         if (vec1.length != vec2.length) {
             throw new IllegalArgumentException("Input arrays for cosine similarity have different sizes");
         }

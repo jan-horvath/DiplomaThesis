@@ -1,4 +1,4 @@
-package cz.muni.fi.thesis.sequences;
+package cz.muni.fi.thesis.episode;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -12,16 +12,13 @@ public class HmwEpisode {
     private static int nextId = 0;
     private static int nextShingleID() {return nextId++;}
 
-    public static BiMap<Shingle, Integer> getShingleIds() {
-        return shingleIds;
-    }
     public static Map<Integer, Double> getIdf() {
         return idf;
     }
 
     private final int id;
     private final String scenario;
-    private final List<Integer> sequence;
+    private final List<Integer> hmwSequence;
     private Map<Integer, Integer> term_frequency;
 
     public int getId() {
@@ -32,9 +29,8 @@ public class HmwEpisode {
     }
 
     private boolean[] set;
-    private int[] bag;
+    private double[] bag;
     private double[] tfidf;
-    private double[] tf;
 
 
     //--------------------------------------------Static functions------------------------------------------------------
@@ -53,10 +49,10 @@ public class HmwEpisode {
 
     private static void createShingleIds(Map<Integer, List<Integer>> data, int minK, int maxK) {
         shingleIds = HashBiMap.create();
-        for (List<Integer> sequence : data.values()) {
+        for (List<Integer> episode : data.values()) {
             for (int K = minK; K <= maxK; ++K) {
-                for (int i = 0; i < sequence.size() - K + 1; ++i) {
-                    Shingle newShingle = new Shingle(sequence.subList(i, i + K));
+                for (int i = 0; i < episode.size() - K + 1; ++i) {
+                    Shingle newShingle = new Shingle(episode.subList(i, i + K));
                     if (!shingleIds.containsKey(newShingle)) {
                         shingleIds.put(newShingle, nextShingleID());
                     }
@@ -69,8 +65,8 @@ public class HmwEpisode {
         idf = new HashMap<>();
         Map<Shingle, Integer> shingleOccurrences = new HashMap<>();
         for (Map.Entry<Integer, List<Integer>> entry : data.entrySet()) {
-            List<Integer> sequence = entry.getValue();
-            Set<Shingle> shinglesFound = getShinglesFromSequence(sequence, minK, maxK);
+            List<Integer> episode = entry.getValue();
+            Set<Shingle> shinglesFound = getShinglesFromEpisode(episode, minK, maxK);
             for (Shingle shingle : shinglesFound) {
                 if (shingleOccurrences.containsKey(shingle)) {
                     Integer i = shingleOccurrences.get(shingle);
@@ -87,11 +83,11 @@ public class HmwEpisode {
         }
     }
 
-    private static Set<Shingle> getShinglesFromSequence(List<Integer> sequence, int minK, int maxK) {
+    private static Set<Shingle> getShinglesFromEpisode(List<Integer> episode, int minK, int maxK) {
         Set<Shingle> shinglesFound = new HashSet<>();
         for (int K = minK; K <= maxK; ++K) {
-            for (int i = 0; i < sequence.size() - K + 1; ++i) {
-                Shingle shingle = new Shingle(sequence.subList(i, i + K));
+            for (int i = 0; i < episode.size() - K + 1; ++i) {
+                Shingle shingle = new Shingle(episode.subList(i, i + K));
                 shinglesFound.add(shingle);
             }
         }
@@ -100,15 +96,15 @@ public class HmwEpisode {
 
     //------------------------------------------Non-static functions----------------------------------------------------
 
-    public HmwEpisode(int id, String scenario, List<Integer> motionWords) {
+    HmwEpisode(int id, String scenario, List<Integer> motionWords) {
         this.id = id;
         this.scenario = scenario;
-        this.sequence = motionWords;
+        this.hmwSequence = motionWords;
         computeTf(motionWords);
     }
 
-    public List<Integer> getSequence() {
-        return sequence;
+    public List<Integer> getHmwSequence() {
+        return hmwSequence;
     }
 
     private void computeTf(List<Integer> motionWords) {
@@ -120,7 +116,6 @@ public class HmwEpisode {
         for (int K = minK; K <= maxK; ++K) {
             for (int i = 0; i < motionWords.size() - K + 1; ++i) {
                 Integer shingleIndex = shingleIds.get(new Shingle(motionWords.subList(i, i + K)));
-                assert(shingleIndex != null);
                 term_frequency.put(shingleIndex, term_frequency.get(shingleIndex) + 1);
             }
         }
@@ -138,24 +133,14 @@ public class HmwEpisode {
         return set;
     }
 
-    public int[] toBag() {
+    public double[] toBag() {
        if (bag == null) {
-            bag = new int[term_frequency.size()];
+            bag = new double[term_frequency.size()];
             for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
                 bag[entry.getKey()] = entry.getValue();
             }
         }
         return bag;
-    }
-
-    public double[] toTfWeights() {
-        if (tf == null) {
-            tf = new double[term_frequency.size()];
-            for (Map.Entry<Integer, Integer> entry : term_frequency.entrySet()) {
-                tf[entry.getKey()] = entry.getValue();
-            }
-        }
-        return tf;
     }
 
     public double[] toIdfWeights() {

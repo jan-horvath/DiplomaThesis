@@ -1,23 +1,23 @@
-package cz.muni.fi.thesis.sequences;
+package cz.muni.fi.thesis.episode;
 
 import java.util.*;
 
 public class MomwEpisode {
 
     private int id;
-    private List<MOMW> sequence;
+    private List<MOMW> momwSequence;
     private Set<MOMW> set;
     private String scenario;
 
-    public MomwEpisode(int id, String scenario, List<int[]> sequence, List<Double> weights) {
-        assert(sequence.size() == weights.size());
+    MomwEpisode(int id, String scenario, List<int[]> momwSequence, List<Double> weights) {
+        assert(momwSequence.size() == weights.size());
         this.id = id;
         this.scenario = scenario;
-        this.sequence = new ArrayList<>();
+        this.momwSequence = new ArrayList<>();
         this.set = new HashSet<>();
-        for (int i = 0; i < sequence.size(); ++i) {
-            MOMW momw = new MOMW(sequence.get(i), weights.get(i));
-            this.sequence.add(momw);
+        for (int i = 0; i < momwSequence.size(); ++i) {
+            MOMW momw = new MOMW(momwSequence.get(i), weights.get(i));
+            this.momwSequence.add(momw);
             this.set.add(momw);
         }
     }
@@ -26,8 +26,8 @@ public class MomwEpisode {
         return id;
     }
 
-    public List<MOMW> getSequence() {
-        return sequence;
+    public List<MOMW> getMomwSequence() {
+        return momwSequence;
     }
 
     public Set<MOMW> getSet() {
@@ -38,7 +38,7 @@ public class MomwEpisode {
         return scenario;
     }
 
-    public class MOMW {
+    public static class MOMW {
         private int[] motionWord;
         double IDF;
 

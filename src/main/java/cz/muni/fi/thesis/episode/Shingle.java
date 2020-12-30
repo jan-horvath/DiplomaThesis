@@ -1,4 +1,4 @@
-package cz.muni.fi.thesis.sequences;
+package cz.muni.fi.thesis.episode;
 
 import java.util.List;
 import java.util.Objects;
