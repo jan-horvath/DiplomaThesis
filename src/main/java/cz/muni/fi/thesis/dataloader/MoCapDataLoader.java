@@ -16,6 +16,11 @@ public class MoCapDataLoader {
 
     private static final int OVERLAYS_COUNT = 5;
 
+    /**
+     * Loads the data into the MoCapData class from files from predefined paths
+     * @return Loaded MoCap data
+     * @throws IOException if any file is not found
+     */
     public static MoCapData loadData() throws IOException {
         MoCapData moCapData = new MoCapData();
         moCapData.setHMWs(parseHmwDataFile(HMW_DATASET_PATH));
@@ -37,8 +42,8 @@ public class MoCapDataLoader {
     static private Pattern numberPattern = Pattern.compile("\\d+");
 
     /**
-     * This function expects the data to contain individual MoCap recording represented by hard motion words.
-     * Every recording should start with:
+     * This function expects the data to contain individual MoCap recordings represented by hard motion words.
+     * Every recording should start with the following two lines:
      *
      * #objectKey messif.objects.keys.AbstractObjectKey <sequenceId>_0_0_0
      * <number_of_motionwords>;mcdr.objects.impl.ObjectMotionWord
@@ -78,13 +83,13 @@ public class MoCapDataLoader {
 
 
     /**
-     * This function expects the data to contain individual MoCap recording represented by motion words.
-     * Every recording should start with:
+     * This function expects the data to contain individual MoCap recordings represented by multi-overlay motion words.
+     * Every recording should start with the following two lines:
      *
      * #objectKey messif.objects.keys.AbstractObjectKey <sequenceId>_0_0_0
      * <number_of_motionwords>;mcdr.objects.impl.ObjectMotionWord
      *
-     * followed by <number_of_motionwords> lines. Each line should contain {@code overlaysCount} comma separated motion
+     * followed by <number_of_motionwords> lines. Each line should contain OVERLAYS_COUNT comma separated motion
      * words (integers)
      *
      * @param filename - filename
@@ -118,6 +123,23 @@ public class MoCapDataLoader {
         return motions;
     }
 
+    /**
+     * The function expects a file containing scenarios for each episode.
+     *
+     * If the halvesSwitched parameter is false then the format of the file should start with line:
+     * seqId;HDM_seqId
+     * followed by lines of the format <sequence id>;<2-letter ID of the actor>_<scenario id>_<take number>
+     *     example: 3156;bd_02-03_04
+     *
+     * If the the halvesSwitched parameter is true then the format of each line is either:
+     * <sequence id>_<scenario id> (example: 3439_01-06)
+     *     or
+     * SwitchedHalf-<sequence id>_<scenario id>-switched (example: SwitchedHalf-3433_01-06-switched)
+     * @param filename - filename
+     * @param halvesSwitched - explained above
+     * @return map, which assigns a String scenario identifier to the sequence ID
+     * @throws IOException
+     */
     static private Map<Integer, String> parseScenarioFile(String filename, boolean halvesSwitched) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(filename)));
         Map<Integer, String> motions = new HashMap<>();

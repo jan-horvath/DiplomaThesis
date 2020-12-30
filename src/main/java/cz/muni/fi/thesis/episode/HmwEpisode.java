@@ -5,8 +5,14 @@ import com.google.common.collect.HashBiMap;
 
 import java.util.*;
 
+/**
+ * Contains information about an episode of hard motion words as well as its shingle representation, such as episode
+ * (sequence) ID, scenario, list of HMWs and the term frequency of shingles.
+ * Also contains static information about the dataset such as IDF for each existing shingle, bidirectional map of
+ * shingle IDs and shingles.
+ */
 public class HmwEpisode {
-    private static int minK, maxK;
+    private static int minShingleK, maxShingleK;
     private static BiMap<Shingle, Integer> shingleIds;
     private static Map<Integer, Double> idf;
     private static int nextId = 0;
@@ -35,9 +41,14 @@ public class HmwEpisode {
 
     //--------------------------------------------Static functions------------------------------------------------------
 
+    /**
+     * Sets up the static part of the class by precomputing IDF and ID for each existing shingle in the {@code data} of
+     * size between {@code minK} and {@code maxK} including.
+     * @param data dataset of HMW episodes
+     */
     public static void setUp(Map<Integer, List<Integer>> data, int minK, int maxK) {
-        HmwEpisode.minK = minK;
-        HmwEpisode.maxK = maxK;
+        HmwEpisode.minShingleK = minK;
+        HmwEpisode.maxShingleK = maxK;
         nextId = 0;
         createShingleIds(data, minK, maxK);
         computeIdf(data, minK, maxK);
@@ -113,7 +124,7 @@ public class HmwEpisode {
             term_frequency.put(id, 0);
         }
 
-        for (int K = minK; K <= maxK; ++K) {
+        for (int K = minShingleK; K <= maxShingleK; ++K) {
             for (int i = 0; i < motionWords.size() - K + 1; ++i) {
                 Integer shingleIndex = shingleIds.get(new Shingle(motionWords.subList(i, i + K)));
                 term_frequency.put(shingleIndex, term_frequency.get(shingleIndex) + 1);
@@ -121,6 +132,9 @@ public class HmwEpisode {
         }
     }
 
+    /**
+     * Converts the episode to a set
+     */
     public boolean[] toSet() {
         if (set == null) {
             set = new boolean[term_frequency.size()];
@@ -133,6 +147,9 @@ public class HmwEpisode {
         return set;
     }
 
+    /**
+     * Converts the episode to a bag (multiset) which is the same as a vector of TF weights
+     */
     public double[] toBag() {
        if (bag == null) {
             bag = new double[term_frequency.size()];
@@ -143,6 +160,9 @@ public class HmwEpisode {
         return bag;
     }
 
+    /**
+     * Converts the episode to a vector of IDF weights
+     */
     public double[] toIdfWeights() {
         double[] weights = new double[term_frequency.size()];
         for (Map.Entry<Integer, Double> entry : idf.entrySet()) {
@@ -153,6 +173,9 @@ public class HmwEpisode {
         return weights;
     }
 
+    /**
+     * Converts the episode to a vector of TFIDF weights
+     */
     public double[] toTfIdfWeights() {
         if (tfidf == null) {
             tfidf = new double[term_frequency.size()];

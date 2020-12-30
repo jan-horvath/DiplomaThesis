@@ -20,6 +20,9 @@ public class EpisodeUtility {
         return Math.log(((double) overlayData.size()) / count);
     }
 
+    /**
+     * Computes IDF weights for MOMWs
+     */
     private static List<Double> computeWeights(List<int[]> episode, Map<Integer, List<int[]>> overlayData) {
         List<Double> weights = new ArrayList<>();
 
@@ -30,6 +33,9 @@ public class EpisodeUtility {
         return weights;
     }
 
+    /**
+     * Converts map of MOMWs into a list of MomwEpisodes with scenarios and computes the IDF weights of individual MOMWs
+     */
     public static List<MomwEpisode> createMomwEpisodes(Map<Integer, List<int[]>> motionWords,
                                                        Map<Integer, String> scenarios) {
        List<MomwEpisode> episodes = new ArrayList<>();
@@ -40,6 +46,9 @@ public class EpisodeUtility {
         return episodes;
     }
 
+    /**
+     * Converts map of MOMWs into a map of MomwEpisodes with scenarios and computes the IDF weights of individual MOMWs
+     */
     public static Map<Integer, MomwEpisode> createMomwEpisodesAsMap(Map<Integer, List<int[]>> motionWords,
                                                                     Map<Integer, String> scenarios) {
         List<MomwEpisode> momwEpisodes = createMomwEpisodes(motionWords, scenarios);
@@ -51,6 +60,10 @@ public class EpisodeUtility {
         return map;
     }
 
+    /**
+     * Converts map of HMWs into a list of HmwEpisodes with scenarios
+     * Assumes that the static setUp function on the class HmwEpisode has been properly called
+     */
     public static List<HmwEpisode> createHmwEpisodes(Map<Integer, List<Integer>> motionWords,
                                                      Map<Integer, String> scenarios) {
         List<HmwEpisode> episodes = new ArrayList<>();

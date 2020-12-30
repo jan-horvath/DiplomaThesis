@@ -5,6 +5,9 @@ import cz.muni.fi.thesis.episode.HmwEpisode;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains similarity functions for comparing two HmwEpisodes
+ */
 public class HmwShingleSimilarity {
 
     public static double DTW(HmwEpisode episode1, HmwEpisode episode2) {

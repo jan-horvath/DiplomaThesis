@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Stores the MoCap data in maps, where the keys are IDs of episodes
+ */
 public class MoCapData {
 
     private Map<Integer, List<Integer>> HMWs;

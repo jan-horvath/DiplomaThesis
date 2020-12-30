@@ -6,6 +6,9 @@ import cz.muni.fi.thesis.episode.MomwEpisode;
 import java.util.*;
 import java.util.function.BiFunction;
 
+/**
+ * A matrix represented using a map of lists, which stores the information about similarity between any two episodes
+ */
 public class SimilarityMatrix {
     private Map<Integer, List<SimilarityEntry>> matrix = new HashMap<>();
 
@@ -46,6 +49,12 @@ public class SimilarityMatrix {
         return matrix;
     }
 
+    /**
+     * Computes similarity matrix from HmwEpisodes
+     * @param episodes episodes of hard motion words
+     * @param simFunc similarity function which should be used for comparison
+     * @return similarity matrix
+     */
     public static SimilarityMatrix createMatrixHMW(List<HmwEpisode> episodes, BiFunction<HmwEpisode, HmwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
         for (HmwEpisode query : episodes) {
@@ -62,6 +71,12 @@ public class SimilarityMatrix {
         return sm;
     }
 
+    /**
+     * Computes similarity matrix from MomwEpisodes
+     * @param episodes episodes of multi-overlay motion words
+     * @param simFunc similarity function which should be used for comparison
+     * @return similarity matrix
+     */
     public static SimilarityMatrix createMatrixMOMW(List<MomwEpisode> episodes, BiFunction<MomwEpisode, MomwEpisode, Double> simFunc) {
         SimilarityMatrix sm = new SimilarityMatrix();
         for (MomwEpisode query : episodes) {
@@ -78,6 +93,15 @@ public class SimilarityMatrix {
         return sm;
     }
 
+    /**
+     * Create an incomplete matrix of only filtered pairs of episodes from {@code filteredEpisodes}.
+     * @param filteredEpisodes A map of arrays of episode IDs, each array has an episode ID as a key. The function
+     *                         computes similarity between the key episode and all episodes in the array associated with
+     *                         the key
+     * @param momwEpisodes map of MomwEpisodes with the key being their ID for faster look up
+     * @param simFunc similarity function which should be used for comparison
+     * @return similarity matrix
+     */
     public static SimilarityMatrix refineMatrix(
             Map<Integer, int[]> filteredEpisodes,
             Map<Integer, MomwEpisode> momwEpisodes,

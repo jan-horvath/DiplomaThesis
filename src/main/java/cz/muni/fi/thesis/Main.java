@@ -15,6 +15,7 @@ import java.util.function.BiFunction;
 
 /**TODO
  * add documentation
+ * remove unnecessary data files from directory
  */
 
 public class Main {
@@ -35,7 +36,7 @@ public class Main {
     /**
      * Choose experiments from a concrete chapter here
      */
-    private static Experiment experiment = Experiment.CHAPTER_5;
+    private static Experiment experiments_to_run = Experiment.CHAPTER_5;
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static final int OF_K = 10;
@@ -87,7 +88,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         MoCapData data = MoCapDataLoader.loadData();
 
-        switch (experiment) {
+        switch (experiments_to_run) {
             case CHAPTER_4: {
                 HmwEpisode.setUp(data.getHMWs());
                 List<HmwEpisode> hmwEpisodes = EpisodeUtility.createHmwEpisodes(data.getHMWs(), data.getOFScenarios());

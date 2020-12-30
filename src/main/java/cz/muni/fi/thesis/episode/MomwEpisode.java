@@ -2,6 +2,10 @@ package cz.muni.fi.thesis.episode;
 
 import java.util.*;
 
+/**
+ * Contains information about an episode of multi-overlay motion words, such as episode (sequence) ID, list of MOMWs,
+ * set of MOMWs and the scenario
+ */
 public class MomwEpisode {
 
     private int id;
