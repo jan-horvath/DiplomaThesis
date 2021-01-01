@@ -36,7 +36,7 @@ public class Main {
     /**
      * Choose experiments from a concrete chapter here
      */
-    private static Experiment experiments_to_run = Experiment.CHAPTER_5;
+    private static Experiment experiments_to_run = Experiment.CHAPTER_8;
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static final int OF_K = 10;
