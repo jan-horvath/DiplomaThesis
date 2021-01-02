@@ -25,18 +25,18 @@ public class Main {
      * for 3D Human Motion Data
      */
     private enum Experiment {
+        CHAPTER_3,
         CHAPTER_4,
         CHAPTER_5,
         CHAPTER_6,
         CHAPTER_7,
-        CHAPTER_8,
-        CHAPTER_9
+        CHAPTER_8
     }
 
     /**
      * Choose experiments from a concrete chapter here
      */
-    private static Experiment experiments_to_run = Experiment.CHAPTER_8;
+    private static Experiment experiments_to_run = Experiment.CHAPTER_3;
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static final int OF_K = 10;
@@ -89,7 +89,7 @@ public class Main {
         MoCapData data = MoCapDataLoader.loadData();
 
         switch (experiments_to_run) {
-            case CHAPTER_4: {
+            case CHAPTER_3: {
                 HmwEpisode.setUp(data.getHMWs());
                 List<HmwEpisode> hmwEpisodes = EpisodeUtility.createHmwEpisodes(data.getHMWs(), data.getOFScenarios());
                 List<MomwEpisode> momwEpisodes = EpisodeUtility.createMomwEpisodes(data.getMOMWs(), data.getOFScenarios());
@@ -101,7 +101,7 @@ public class Main {
                 evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW + DTW");
                 break;
             }
-            case CHAPTER_5: {
+            case CHAPTER_4: {
                 HmwEpisode.setUp(data.getHMWs());
                 List<HmwEpisode> hmwEpisodes = EpisodeUtility.createHmwEpisodes(data.getHMWs(), data.getOFScenarios());
 
@@ -122,7 +122,7 @@ public class Main {
                 }
                 break;
             }
-            case CHAPTER_6: {
+            case CHAPTER_5: {
                 List<MomwEpisode> momwEpisodes = EpisodeUtility.createMomwEpisodes(data.getMOMWs(), data.getOFScenarios());
                 SimilarityMatrix momwMatrix = SimilarityMatrix.createMatrixMOMW(momwEpisodes, MomwSimilarity::jaccardOnSets);
                 evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW");
@@ -137,7 +137,7 @@ public class Main {
                 evaluateMatrix(momwMatrix, data.getOFVariableK(), data.getOFScenarios(), OF_K, "MOMW + TFIDF");
                 break;
             }
-            case CHAPTER_7: {
+            case CHAPTER_6: {
                 //Order-free
                 HmwEpisode.setUp(data.getMixedHMWs());
                 List<HmwEpisode> hmwEpisodes = EpisodeUtility.createHmwEpisodes(data.getMixedHMWs(), data.getOFScenarios());
@@ -172,7 +172,7 @@ public class Main {
                 evaluateMatrix(momwIdfMatrix, data.getOSVariableK(), data.getOSScenarios(), OS_K, "Order-sensitive, MOMW + IDF");
                 break;
             }
-            case CHAPTER_8: {
+            case CHAPTER_7: {
                 //Order-free
                 HmwEpisode.setUp(data.getHMWs());
                 List<HmwEpisode> hmwEpisodes = EpisodeUtility.createHmwEpisodes(data.getMixedHMWs(), data.getOFScenarios());
@@ -199,7 +199,7 @@ public class Main {
                 }
                 break;
             }
-            case CHAPTER_9: {
+            case CHAPTER_8: {
                 for (int K = 1; K <= 5; ++K) {
                     HmwEpisode.setUp(data.getHMWs(), K, K);
                     List<HmwEpisode> hmwEpisodes = EpisodeUtility.createHmwEpisodes(data.getHMWs(), data.getOFScenarios());
